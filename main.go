@@ -1,15 +1,12 @@
 package main
 
 import (
-	"database/sql"
 	"encoding/json"
 	"fmt"
 	_ "github.com/go-sql-driver/mysql"
 	"log"
 	"net/http"
 )
-
-var db *sql.DB
 
 type User struct {
 	Id    int
@@ -20,19 +17,11 @@ type User struct {
 func main() {
 	var err error
 
-	db, err = sql.Open("mysql", "root@tcp(localhost:3307)/golang")
+	db, err := InitDB()
 
 	if err != nil {
-		log.Panic(err)
-		return
+		panic(err)
 	}
-
-	if err := db.Ping(); err != nil {
-		log.Panic(err)
-		return
-	}
-
-	log.Println("Connection with database established")
 
 	rows, err := db.Query("SELECT * from users")
 	defer rows.Close()
