@@ -1,18 +1,14 @@
 package main
 
 import (
+	"ResearchGolang/models"
 	"encoding/json"
 	"fmt"
 	_ "github.com/go-sql-driver/mysql"
 	"log"
 	"net/http"
+	"strconv"
 )
-
-type User struct {
-	Id    int
-	Name  string
-	Email string
-}
 
 func main() {
 	var err error
@@ -23,31 +19,28 @@ func main() {
 		panic(err)
 	}
 
-	rows, err := db.Query("SELECT * from users")
-	defer rows.Close()
-
-	if err != nil {
-		log.Panic(err)
-		return
-	}
-
-	userList := make([]User, 0)
-
-	for rows.Next() {
-		var user User
-		rows.Scan(&user.Id, &user.Name, &user.Email)
-		log.Println(user.Name)
-		userList = append(userList, user)
-	}
-
-	jsonResponse, _ := json.Marshal(userList)
-
 	http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
 		log.Println(r.URL)
 
 		if r.URL.Path != "/" {
 			http.Error(w, "Not found", 404)
+			return
 		}
+
+		limit, err := strconv.Atoi(r.URL.Query().Get("limit"))
+
+		if err != nil {
+			limit = 10
+		}
+
+		userList, err := models.LoadUsers(db, limit)
+
+		if err != nil {
+			http.Error(w, "Unexpected error", 500)
+			return
+		}
+
+		jsonResponse, _ := json.Marshal(userList)
 
 		fmt.Fprintf(w, string(jsonResponse))
 	})
