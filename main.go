@@ -45,5 +45,31 @@ func main() {
 		fmt.Fprintf(w, string(jsonResponse))
 	})
 
+	http.HandleFunc("/messages", func(w http.ResponseWriter, r *http.Request) {
+		log.Println(r.URL)
+
+		if r.URL.Path != "/messages" {
+			http.Error(w, "Not found", 404)
+			return
+		}
+
+		limit, err := strconv.Atoi(r.URL.Query().Get("limit"))
+
+		if err != nil {
+			limit = 10
+		}
+
+		messages, err := models.LoadMessages(db, limit)
+
+		if err != nil {
+			http.Error(w, "Unexpected error", 500)
+			return
+		}
+
+		jsonResponse, _ := json.Marshal(messages)
+
+		fmt.Fprintf(w, string(jsonResponse))
+	})
+
 	http.ListenAndServe(":8080", nil)
 }

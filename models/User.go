@@ -28,7 +28,6 @@ func LoadUsers(db *sql.DB, limit int) ([]User, error) {
 	for rows.Next() {
 		var user User
 		rows.Scan(&user.Id, &user.Name, &user.Email)
-		log.Println(user.Name)
 		userList = append(userList, user)
 	}
 
