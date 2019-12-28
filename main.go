@@ -10,6 +10,13 @@ import (
 	"strconv"
 )
 
+func LoggedHandleFunc(pattern string, handler func(http.ResponseWriter, *http.Request)) {
+	http.HandleFunc(pattern, func(w http.ResponseWriter, r *http.Request) {
+		log.Println(r.URL)
+		handler(w, r)
+	})
+}
+
 func main() {
 	var err error
 
@@ -19,9 +26,7 @@ func main() {
 		panic(err)
 	}
 
-	http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
-		log.Println(r.URL)
-
+	LoggedHandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
 		if r.URL.Path != "/" {
 			http.Error(w, "Not found", 404)
 			return
@@ -45,9 +50,7 @@ func main() {
 		fmt.Fprintf(w, string(jsonResponse))
 	})
 
-	http.HandleFunc("/messages", func(w http.ResponseWriter, r *http.Request) {
-		log.Println(r.URL)
-
+	LoggedHandleFunc("/messages", func(w http.ResponseWriter, r *http.Request) {
 		if r.URL.Path != "/messages" {
 			http.Error(w, "Not found", 404)
 			return
