@@ -29,7 +29,7 @@ func LoadMessages(db *sql.DB, limit int) ([]*Message, error) {
 
 	for rows.Next() {
 		message := new(Message)
-		rows.Scan(&message.Id, message.Author, message.Message, message.OccurredOn)
+		rows.Scan(&message.Id, &message.Author, &message.Message, &message.OccurredOn)
 		mList = append(mList, message)
 	}
 
