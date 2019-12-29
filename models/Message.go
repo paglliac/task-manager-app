@@ -39,3 +39,14 @@ func LoadMessages(db *sql.DB, limit int) ([]*Message, error) {
 
 	return mList, nil
 }
+
+func SaveMessage(db *sql.DB, message Message) (sql.Result, error) {
+	r, err := db.Exec(`INSERT into messages (author, message, occurred_on) values (?, ?, ?)`, message.Author, message.Message, message.OccurredOn)
+
+	if err != nil {
+		log.Fatal(err)
+		return nil, err
+	}
+
+	return r, nil
+}

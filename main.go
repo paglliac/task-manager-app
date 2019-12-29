@@ -74,5 +74,20 @@ func main() {
 		fmt.Fprintf(w, string(jsonResponse))
 	})
 
+	LoggedHandleFunc("/messages/add", func(w http.ResponseWriter, r *http.Request) {
+		if r.URL.Path != "/messages/add" {
+			http.Error(w, "Not found", 404)
+			return
+		}
+
+		decoder := json.NewDecoder(r.Body)
+		var m models.Message
+		decoder.Decode(&m)
+
+		models.SaveMessage(db, m)
+
+	})
+
+	log.Println("Server have been started listening on port 8080")
 	http.ListenAndServe(":8080", nil)
 }
