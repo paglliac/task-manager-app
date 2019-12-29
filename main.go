@@ -84,7 +84,20 @@ func main() {
 		var m models.Message
 		decoder.Decode(&m)
 
-		models.SaveMessage(db, m)
+		if m.OccurredOn.IsZero() {
+			http.Error(w, "Bad Request", 400)
+			return
+		}
+
+		sqlResult, err := models.SaveMessage(db, m)
+
+		if err != nil {
+			http.Error(w, "Something went wrong", 500)
+			return
+		}
+
+		lastInsertId, _ := sqlResult.LastInsertId()
+		fmt.Fprintf(w, "{\"id\": %d}", lastInsertId)
 
 	})
 

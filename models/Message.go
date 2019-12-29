@@ -8,10 +8,10 @@ import (
 )
 
 type Message struct {
-	Id         int
-	Author     string
-	Message    string
-	OccurredOn time.Time
+	Id         int       `json:"id"`
+	Author     string    `json:"author"`
+	Message    string    `json:"message"`
+	OccurredOn time.Time `json:"occurred_on"`
 }
 
 func LoadMessages(db *sql.DB, limit int) ([]*Message, error) {
@@ -44,7 +44,7 @@ func SaveMessage(db *sql.DB, message Message) (sql.Result, error) {
 	r, err := db.Exec(`INSERT into messages (author, message, occurred_on) values (?, ?, ?)`, message.Author, message.Message, message.OccurredOn)
 
 	if err != nil {
-		log.Fatal(err)
+		log.Println(err)
 		return nil, err
 	}
 
