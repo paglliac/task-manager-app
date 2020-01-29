@@ -1,6 +1,7 @@
 package models
 
 import (
+	"ResearchGolang/internal/platform"
 	"database/sql"
 	"fmt"
 	"log"
@@ -14,11 +15,11 @@ type Message struct {
 	OccurredOn time.Time `json:"occurred_on"`
 }
 
-func LoadMessages(db *sql.DB, limit int) ([]*Message, error) {
+func LoadMessages(limit int) ([]*Message, error) {
 	mList := make([]*Message, 0)
 
-	s := fmt.Sprintf("SELECT id, author, message, occurred_on from messages LIMIT %d", limit)
-	rows, err := db.Query(s)
+	s := fmt.Sprintf("SELECT id, author, message, occurred_on from messages ORDER BY id desc LIMIT %d ", limit)
+	rows, err := platform.Db.Query(s)
 
 	defer rows.Close()
 
@@ -40,8 +41,8 @@ func LoadMessages(db *sql.DB, limit int) ([]*Message, error) {
 	return mList, nil
 }
 
-func SaveMessage(db *sql.DB, message Message) (sql.Result, error) {
-	r, err := db.Exec(`INSERT into messages (author, message, occurred_on) values (?, ?, ?)`, message.Author, message.Message, message.OccurredOn)
+func SaveMessage(message Message) (sql.Result, error) {
+	r, err := platform.Db.Exec(`INSERT into task_comments (author, message, created_at) values (?, ?, ?)`, message.Author, message.Message, message.OccurredOn)
 
 	if err != nil {
 		log.Println(err)
