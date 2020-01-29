@@ -13,7 +13,7 @@ type Hub struct {
 
 var CurrentHub *Hub
 
-func InitHub() *Hub {
+func InitHub() {
 	CurrentHub = &Hub{
 		clients:    make(map[*Client]bool),
 		Broadcast:  make(chan []byte),
@@ -21,7 +21,7 @@ func InitHub() *Hub {
 		unregister: make(chan *Client),
 	}
 
-	return CurrentHub
+	go CurrentHub.Run()
 }
 
 func (h *Hub) Run() {

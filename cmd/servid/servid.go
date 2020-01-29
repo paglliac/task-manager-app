@@ -1,22 +1,13 @@
 package main
 
 import (
-	"ResearchGolang/cmd/servid/routes/handlers"
+	"ResearchGolang/cmd/servid/routes"
 	"ResearchGolang/internal/platform"
 	_ "github.com/go-sql-driver/mysql"
 	"log"
 	"net/http"
+	"time"
 )
-
-func LoggedHandleFunc(pattern string, handler func(http.ResponseWriter, *http.Request)) {
-	http.HandleFunc(pattern, func(w http.ResponseWriter, r *http.Request) {
-		w.Header().Set("Access-Control-Allow-Origin", "http://localhost:3000")
-		w.Header().Set("Access-Control-Allow-Methods", "GET,HEAD,OPTIONS,POST,PUT")
-		w.Header().Set("Access-Control-Allow-Headers", "Access-Control-Allow-Headers, Origin,Accept, X-Requested-With, Content-Type, Access-Control-Request-Method, Access-Control-Request-Headers")
-		log.Println(r.URL)
-		handler(w, r)
-	})
-}
 
 func main() {
 	err := platform.InitDB()
@@ -25,18 +16,21 @@ func main() {
 		panic(err)
 	}
 
-	hub := platform.InitHub()
-	go hub.Run()
+	platform.InitHub()
 
-	LoggedHandleFunc("/", handlers.UsersListHandler)
-
-	LoggedHandleFunc("/messages", handlers.MessageListHandler)
-	LoggedHandleFunc("/messages/add", handlers.MessageCreateHandler)
-
-	http.HandleFunc("/ws", func(w http.ResponseWriter, r *http.Request) {
-		platform.ServeWs(hub, w, r)
-	})
+	r := routes.CreateRouter()
 
 	log.Println("Server have been started listening on port 8080")
-	http.ListenAndServe(":8080", nil)
+
+	srv := http.Server{
+		Addr:              ":8080",
+		Handler:           r,
+		ReadTimeout:       15 * time.Second,
+		ReadHeaderTimeout: 0,
+		WriteTimeout:      15 * time.Second,
+		IdleTimeout:       0,
+		MaxHeaderBytes:    0,
+	}
+
+	log.Fatal(srv.ListenAndServe())
 }

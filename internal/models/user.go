@@ -15,7 +15,7 @@ type User struct {
 func LoadUsers(limit int) ([]User, error) {
 	userList := make([]User, 0)
 
-	s := fmt.Sprintf("SELECT * from users LIMIT %d", limit)
+	s := fmt.Sprintf("SELECT id, name, email from users LIMIT %d", limit)
 	rows, err := platform.Db.Query(s)
 
 	defer rows.Close()
@@ -27,8 +27,15 @@ func LoadUsers(limit int) ([]User, error) {
 
 	for rows.Next() {
 		var user User
-		rows.Scan(&user.Id, &user.Name, &user.Email)
+		err := rows.Scan(&user.Id, &user.Name, &user.Email)
+		if err != nil {
+			return userList, err
+		}
 		userList = append(userList, user)
+	}
+
+	if err := rows.Err(); err != nil {
+		return nil, err
 	}
 
 	return userList, nil

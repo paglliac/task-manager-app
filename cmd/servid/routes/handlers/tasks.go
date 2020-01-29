@@ -9,8 +9,8 @@ import (
 	"strconv"
 )
 
-func UsersListHandler(w http.ResponseWriter, r *http.Request) {
-	if r.URL.Path != "/" {
+func TaskListHandler(w http.ResponseWriter, r *http.Request) {
+	if r.URL.Path != "/tasks" {
 		http.Error(w, "Not found", 404)
 		return
 	}
@@ -21,20 +21,13 @@ func UsersListHandler(w http.ResponseWriter, r *http.Request) {
 		limit = 10
 	}
 
-	userList, err := models.LoadUsers(limit)
+	tasks := models.LoadTasks(limit)
 
-	if err != nil {
-		log.Println(err)
-		http.Error(w, "Unexpected error", 500)
-		return
-	}
-
-	jsonResponse, _ := json.Marshal(userList)
+	jsonResponse, _ := json.Marshal(tasks)
 
 	_, err = fmt.Fprintf(w, string(jsonResponse))
 
 	if err != nil {
 		log.Println("Can't write response in response writer", err)
 	}
-
 }
