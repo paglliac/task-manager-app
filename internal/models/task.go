@@ -2,6 +2,7 @@ package models
 
 import (
 	"ResearchGolang/internal/platform"
+	"database/sql"
 	"fmt"
 	"log"
 	"time"
@@ -14,6 +15,10 @@ type Task struct {
 	Status      string    `json:"status"`
 	CreatedAt   time.Time `json:"created_at"`
 }
+
+const (
+	taskStatusOpen = "open"
+)
 
 func LoadTasks(limit int) []Task {
 	taskList := make([]Task, 0)
@@ -42,4 +47,15 @@ func LoadTasks(limit int) []Task {
 	}
 
 	return taskList
+}
+
+func CreateTask(task Task) (sql.Result, error) {
+	r, err := platform.Db.Exec(`INSERT into tasks (title, description, status, created_at, updated_at, author) values (?, ?, ?, ?, ?, ?)`, task.Title, task.Description, taskStatusOpen, time.Now(), time.Now(), 1)
+
+	if err != nil {
+		log.Println(err)
+		return nil, err
+	}
+
+	return r, nil
 }
