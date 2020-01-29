@@ -4,7 +4,6 @@ import (
 	"ResearchGolang/internal/platform"
 	"fmt"
 	"log"
-	"runtime"
 )
 
 type User struct {
@@ -32,17 +31,5 @@ func LoadUsers(limit int) ([]User, error) {
 		userList = append(userList, user)
 	}
 
-	PrintMemUsage()
-
 	return userList, nil
-}
-
-func PrintMemUsage() {
-	var m runtime.MemStats
-	runtime.ReadMemStats(&m)
-	// For info on each, see: https://golang.org/pkg/runtime/#MemStats
-	fmt.Printf("Alloc = %v B", m.Alloc)
-	fmt.Printf("\tTotalAlloc = %v B", m.TotalAlloc)
-	fmt.Printf("\tSys = %v B", m.Sys)
-	fmt.Printf("\tNumGC = %v\n", m.NumGC)
 }
