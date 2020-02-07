@@ -4,6 +4,7 @@ import (
 	"ResearchGolang/internal/platform"
 	"database/sql"
 	"fmt"
+	"github.com/google/uuid"
 	"log"
 	"time"
 )
@@ -14,6 +15,12 @@ type Task struct {
 	Description string    `json:"description"`
 	Status      string    `json:"status"`
 	CreatedAt   time.Time `json:"created_at"`
+}
+
+type TaskEvent struct {
+	taskId     int
+	eventType  string
+	occurredOn string
 }
 
 const (
@@ -50,11 +57,24 @@ func LoadTasks(limit int) []Task {
 }
 
 func CreateTask(task Task) (sql.Result, error) {
-	r, err := platform.Db.Exec(`INSERT into tasks (title, description, status, created_at, updated_at, author) values (?, ?, ?, ?, ?, ?)`, task.Title, task.Description, taskStatusOpen, time.Now(), time.Now(), 1)
+	id, err := uuid.NewRandom()
+
+	if err != nil {
+		return nil, err
+	}
+
+	r, err := platform.Db.Exec(`INSERT into tasks (id, title, description, status, created_at, updated_at, author) values (?, ?, ?, ?, ?, ?, ?)`, id, task.Title, task.Description, taskStatusOpen, time.Now(), time.Now(), 1)
 
 	if err != nil {
 		log.Println(err)
 		return nil, err
+	}
+
+	// TODO add handle events by pipe not right here
+	_, err = platform.Db.Exec(`INSERT into tasks_events (task_id, event_type, occurred_on) values (?, ?, ?)`, id, "task_created", time.Now())
+
+	if err != nil {
+		log.Println(err)
 	}
 
 	return r, nil
