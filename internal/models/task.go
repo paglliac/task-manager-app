@@ -10,7 +10,7 @@ import (
 )
 
 type Task struct {
-	Id          int       `json:"id"`
+	Id          string    `json:"id"`
 	Title       string    `json:"title"`
 	Description string    `json:"description"`
 	Status      string    `json:"status"`
@@ -60,6 +60,7 @@ func CreateTask(task Task) (sql.Result, error) {
 	id, err := uuid.NewRandom()
 
 	if err != nil {
+		log.Printf("Error while uuid generated. %v \n", err)
 		return nil, err
 	}
 
