@@ -2,6 +2,7 @@ package main
 
 import (
 	"ResearchGolang/cmd/servid/routes"
+	"ResearchGolang/internal/models"
 	"ResearchGolang/internal/platform"
 	_ "github.com/go-sql-driver/mysql"
 	"log"
@@ -19,6 +20,8 @@ func main() {
 	platform.InitHub()
 
 	r := routes.CreateRouter()
+
+	models.InitTasksModule(platform.Db)
 
 	log.Println("Server have been started listening on port 8080")
 

@@ -23,11 +23,21 @@ type TaskEvent struct {
 	occurredOn string
 }
 
-const (
-	taskStatusOpen = "open"
-)
+type TaskStorage interface {
+	loadTasks() []Task
+}
 
-func LoadTasks(limit int) []Task {
+var taskStorage *SqlTaskStorage
+
+func InitTasksModule(db *sql.DB) {
+	taskStorage = &SqlTaskStorage{db: db}
+}
+
+type SqlTaskStorage struct {
+	db *sql.DB
+}
+
+func (s *SqlTaskStorage) loadTasks(limit int) []Task {
 	taskList := make([]Task, 0)
 
 	q := fmt.Sprintf("SELECT id, title, description, status, created_at FROM tasks limit %d", limit)
@@ -56,12 +66,20 @@ func LoadTasks(limit int) []Task {
 	return taskList
 }
 
+const (
+	taskStatusOpen = "open"
+)
+
+func LoadTasks(limit int) []Task {
+	return taskStorage.loadTasks(limit)
+}
+
 func CreateTask(task Task) (sql.Result, error) {
 	id, err := uuid.NewRandom()
 
 	if err != nil {
 		log.Printf("Error while uuid generated. %v \n", err)
-		return nil, err
+		return nil, fmt.Errorf("error while generated uuid %v", err)
 	}
 
 	r, err := platform.Db.Exec(`INSERT into tasks (id, title, description, status, created_at, updated_at, author) values (?, ?, ?, ?, ?, ?, ?)`, id, task.Title, task.Description, taskStatusOpen, time.Now(), time.Now(), 1)
