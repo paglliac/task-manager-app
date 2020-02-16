@@ -1,19 +1,20 @@
-package models
+package tasks
 
 import (
-	"tasks17-server/internal/platform"
 	"database/sql"
+	"encoding/json"
 	"github.com/google/uuid"
 	"log"
+	"tasks17-server/internal/platform"
 	"time"
 )
 
 type TaskComment struct {
-	Id        string `json:"id"`
-	TaskId    string `json:"task_id"`
-	Message   string `json:"message"`
-	Author    int    `json:"author"`
-	CreatedAt time.Time
+	Id        string    `json:"id"`
+	TaskId    string    `json:"task_id"`
+	Message   string    `json:"message"`
+	Author    int       `json:"author"`
+	CreatedAt time.Time `json:"created_at"`
 }
 
 func LeaveComment(comment TaskComment) (sql.Result, error) {
@@ -24,8 +25,9 @@ func LeaveComment(comment TaskComment) (sql.Result, error) {
 	}
 
 	comment.CreatedAt = time.Now()
+	comment.Id = id.String()
 
-	r, err := platform.Db.Exec("INSERT INTO task_comments (id, author, message, created_at, task_id) values (?,?,?,?,?)", id, comment.Author, comment.Message, comment.CreatedAt, comment.TaskId)
+	r, err := platform.Db.Exec("INSERT INTO task_comments (id, author, message, created_at, task_id) values (?,?,?,?,?)", comment.Id, comment.Author, comment.Message, comment.CreatedAt, comment.TaskId)
 
 	if err != nil {
 		log.Printf("Error while inserting task comment %v", err)
@@ -38,6 +40,9 @@ func LeaveComment(comment TaskComment) (sql.Result, error) {
 	if err != nil {
 		log.Printf("Error while inserting task event %v", err)
 	}
+
+	jsonResponse, _ := json.Marshal(comment)
+	hub.Broadcast <- jsonResponse
 
 	return r, nil
 }

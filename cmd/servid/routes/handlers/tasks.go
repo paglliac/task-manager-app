@@ -1,14 +1,13 @@
 package handlers
 
 import (
-	"tasks17-server/internal/models"
-	"tasks17-server/internal/tasks"
 	"encoding/json"
 	"fmt"
 	"github.com/gorilla/mux"
 	"log"
 	"net/http"
 	"strconv"
+	"tasks17-server/internal/tasks"
 )
 
 func TaskListHandler(w http.ResponseWriter, r *http.Request) {
@@ -66,10 +65,10 @@ func TaskCommentCreateHandler(w http.ResponseWriter, r *http.Request) {
 
 	decoder := json.NewDecoder(r.Body)
 
-	var comment models.TaskComment
+	var comment tasks.TaskComment
 	decoder.Decode(&comment)
 
-	sqlResult, err := models.LeaveComment(comment)
+	sqlResult, err := tasks.LeaveComment(comment)
 
 	if err != nil {
 		http.Error(w, "Something went wrong", 500)
@@ -93,7 +92,7 @@ func TaskCommentLoadHandler(w http.ResponseWriter, r *http.Request) {
 
 	vars := mux.Vars(r)
 
-	tasks := models.LoadComments(vars["comment"], limit)
+	tasks := tasks.LoadComments(vars["comment"], limit)
 
 	jsonResponse, _ := json.Marshal(tasks)
 

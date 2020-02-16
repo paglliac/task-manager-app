@@ -1,12 +1,12 @@
 package main
 
 import (
-	"tasks17-server/cmd/servid/routes"
-	"tasks17-server/internal/platform"
-	"tasks17-server/internal/tasks"
 	_ "github.com/go-sql-driver/mysql"
 	"log"
 	"net/http"
+	"tasks17-server/cmd/servid/routes"
+	"tasks17-server/internal/platform"
+	"tasks17-server/internal/tasks"
 	"time"
 )
 
@@ -21,7 +21,7 @@ func main() {
 
 	r := routes.CreateRouter()
 
-	tasks.InitTasksModule(platform.Db)
+	tasks.InitTasksModule(platform.Db, platform.CurrentHub)
 
 	log.Println("Server have been started listening on port 8080")
 

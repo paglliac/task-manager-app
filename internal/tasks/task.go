@@ -1,11 +1,11 @@
 package tasks
 
 import (
-	"tasks17-server/internal/platform"
 	"database/sql"
 	"fmt"
 	"github.com/google/uuid"
 	"log"
+	"tasks17-server/internal/platform"
 	"time"
 )
 
@@ -29,8 +29,11 @@ type TaskStorage interface {
 
 var taskStorage *SqlTaskStorage
 
-func InitTasksModule(db *sql.DB) {
+var hub *platform.Hub
+
+func InitTasksModule(db *sql.DB, h *platform.Hub) {
 	taskStorage = &SqlTaskStorage{db: db}
+	hub = h
 }
 
 type SqlTaskStorage struct {
