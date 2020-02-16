@@ -17,6 +17,11 @@ type TaskComment struct {
 	CreatedAt time.Time `json:"created_at"`
 }
 
+type WsEvent struct {
+	Type  string      `json:"type"`
+	Event interface{} `json:"event"`
+}
+
 func LeaveComment(comment TaskComment) (sql.Result, error) {
 	id, err := uuid.NewRandom()
 
@@ -41,8 +46,12 @@ func LeaveComment(comment TaskComment) (sql.Result, error) {
 		log.Printf("Error while inserting task event %v", err)
 	}
 
-	jsonResponse, _ := json.Marshal(comment)
-	hub.Broadcast <- jsonResponse
+	event := WsEvent{
+		Type:  "comment_added",
+		Event: comment,
+	}
+	wsEventJson, _ := json.Marshal(event)
+	hub.Broadcast <- wsEventJson
 
 	return r, nil
 }
