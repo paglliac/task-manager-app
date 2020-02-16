@@ -1,7 +1,7 @@
 package tasks
 
 import (
-	"ResearchGolang/internal/platform"
+	"tasks17-server/internal/platform"
 	"database/sql"
 	"fmt"
 	"github.com/google/uuid"

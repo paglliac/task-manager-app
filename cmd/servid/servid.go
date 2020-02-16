@@ -1,9 +1,9 @@
 package main
 
 import (
-	"ResearchGolang/cmd/servid/routes"
-	"ResearchGolang/internal/platform"
-	"ResearchGolang/internal/tasks"
+	"tasks17-server/cmd/servid/routes"
+	"tasks17-server/internal/platform"
+	"tasks17-server/internal/tasks"
 	_ "github.com/go-sql-driver/mysql"
 	"log"
 	"net/http"

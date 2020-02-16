@@ -1,7 +1,7 @@
 package models
 
 import (
-	"ResearchGolang/internal/platform"
+	"tasks17-server/internal/platform"
 	"database/sql"
 	"github.com/google/uuid"
 	"log"

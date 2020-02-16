@@ -1,7 +1,7 @@
 package handlers
 
 import (
-	"ResearchGolang/internal/models"
+	"tasks17-server/internal/models"
 	"encoding/json"
 	"fmt"
 	"log"

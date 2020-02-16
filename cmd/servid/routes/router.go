@@ -1,8 +1,8 @@
 package routes
 
 import (
-	"ResearchGolang/cmd/servid/routes/handlers"
-	"ResearchGolang/internal/platform"
+	"tasks17-server/cmd/servid/routes/handlers"
+	"tasks17-server/internal/platform"
 	"github.com/gorilla/mux"
 	"log"
 	"net/http"

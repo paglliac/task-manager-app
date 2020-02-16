@@ -1,8 +1,8 @@
 package handlers
 
 import (
-	"ResearchGolang/internal/models"
-	"ResearchGolang/internal/tasks"
+	"tasks17-server/internal/models"
+	"tasks17-server/internal/tasks"
 	"encoding/json"
 	"fmt"
 	"github.com/gorilla/mux"

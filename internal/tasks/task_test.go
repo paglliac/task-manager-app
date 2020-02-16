@@ -1,7 +1,7 @@
 package tasks
 
 import (
-	"ResearchGolang/internal/platform"
+	"tasks17-server/internal/platform"
 	_ "github.com/go-sql-driver/mysql"
 	"testing"
 	"time"
