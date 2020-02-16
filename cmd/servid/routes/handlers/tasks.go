@@ -2,6 +2,7 @@ package handlers
 
 import (
 	"ResearchGolang/internal/models"
+	"ResearchGolang/internal/tasks"
 	"encoding/json"
 	"fmt"
 	"github.com/gorilla/mux"
@@ -17,7 +18,7 @@ func TaskListHandler(w http.ResponseWriter, r *http.Request) {
 		limit = 10
 	}
 
-	tasks := models.LoadTasks(limit)
+	tasks := tasks.LoadTasks(limit)
 
 	jsonResponse, _ := json.Marshal(tasks)
 
@@ -34,10 +35,10 @@ func TaskCreateHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	decoder := json.NewDecoder(r.Body)
-	var t models.Task
+	var t tasks.Task
 	decoder.Decode(&t)
 
-	sqlResult, err := models.CreateTask(t)
+	sqlResult, err := tasks.CreateTask(t)
 
 	if err != nil {
 		http.Error(w, "Something went wrong", 500)

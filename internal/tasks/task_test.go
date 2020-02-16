@@ -1,4 +1,4 @@
-package models
+package tasks
 
 import (
 	"ResearchGolang/internal/platform"

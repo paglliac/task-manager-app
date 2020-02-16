@@ -58,7 +58,6 @@ func (c *Client) readPump() {
 		}
 
 		message = bytes.TrimSpace(bytes.Replace(message, newline, space, -1))
-		log.Println(string(message))
 		//c.hub.broadcast <- message
 	}
 }
@@ -73,8 +72,6 @@ func (c *Client) writePump() {
 	for {
 		select {
 		case message, ok := <-c.send:
-			log.Println("1")
-			log.Println(message)
 			c.conn.SetWriteDeadline(time.Now().Add(writeWait))
 
 			if !ok {

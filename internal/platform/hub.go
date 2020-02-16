@@ -1,9 +1,5 @@
 package platform
 
-import (
-	"log"
-)
-
 type Hub struct {
 	clients    map[*Client]bool
 	Broadcast  chan []byte
@@ -35,7 +31,6 @@ func (h *Hub) Run() {
 				delete(h.clients, client)
 			}
 		case message := <-h.Broadcast:
-			log.Println(string(message))
 			for client := range h.clients {
 				select {
 				case client.send <- message:
