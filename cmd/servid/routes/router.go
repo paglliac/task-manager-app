@@ -1,11 +1,11 @@
 package routes
 
 import (
-	"tasks17-server/cmd/servid/routes/handlers"
-	"tasks17-server/internal/platform"
 	"github.com/gorilla/mux"
 	"log"
 	"net/http"
+	"tasks17-server/cmd/servid/routes/handlers"
+	"tasks17-server/internal/platform"
 )
 
 func LogMiddleware(next http.Handler) http.Handler {

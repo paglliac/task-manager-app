@@ -1,9 +1,9 @@
 package models
 
 import (
-	"tasks17-server/internal/platform"
 	"fmt"
 	"log"
+	"tasks17-server/internal/platform"
 )
 
 type User struct {

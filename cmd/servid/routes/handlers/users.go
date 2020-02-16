@@ -1,12 +1,12 @@
 package handlers
 
 import (
-	"tasks17-server/internal/models"
 	"encoding/json"
 	"fmt"
 	"log"
 	"net/http"
 	"strconv"
+	"tasks17-server/internal/models"
 )
 
 func UsersListHandler(w http.ResponseWriter, r *http.Request) {

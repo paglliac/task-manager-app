@@ -1,8 +1,8 @@
 package tasks
 
 import (
-	"tasks17-server/internal/platform"
 	_ "github.com/go-sql-driver/mysql"
+	"tasks17-server/internal/platform"
 	"testing"
 	"time"
 )
