@@ -11,7 +11,7 @@ import (
 )
 
 func main() {
-	err := platform.InitDB()
+	db, err := platform.InitDB()
 
 	if err != nil {
 		panic(err)
@@ -21,7 +21,7 @@ func main() {
 
 	r := routes.CreateRouter()
 
-	tasks.InitTasksModule(platform.Db, platform.CurrentHub)
+	tasks.InitTasksModule(db, platform.CurrentHub)
 
 	log.Println("Server have been started listening on port 8080")
 

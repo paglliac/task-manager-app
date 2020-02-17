@@ -32,8 +32,6 @@ func CreateRouter() http.Handler {
 	r.Use(CorsMiddleware)
 	r.Use(LogMiddleware)
 
-	r.HandleFunc("/", handlers.UsersListHandler).Methods("GET", "OPTIONS")
-
 	// Tasks package routes
 	r.HandleFunc("/tasks", handlers.TaskListHandler).Methods("GET", "OPTIONS")
 	r.HandleFunc("/tasks/add", handlers.TaskCreateHandler).Methods("POST", "OPTIONS")

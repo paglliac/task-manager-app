@@ -44,7 +44,7 @@ func (s *SqlTaskStorage) loadTasks(limit int) []Task {
 	taskList := make([]Task, 0)
 
 	q := fmt.Sprintf("SELECT id, title, description, status, created_at FROM tasks limit %d", limit)
-	rows, err := platform.Db.Query(q)
+	rows, err := s.db.Query(q)
 	defer rows.Close()
 
 	if err != nil {
@@ -85,7 +85,7 @@ func CreateTask(task Task) (sql.Result, error) {
 		return nil, fmt.Errorf("error while generated uuid %v", err)
 	}
 
-	r, err := platform.Db.Exec(`INSERT into tasks (id, title, description, status, created_at, updated_at, author) values (?, ?, ?, ?, ?, ?, ?)`, id, task.Title, task.Description, taskStatusOpen, time.Now(), time.Now(), 1)
+	r, err := taskStorage.db.Exec(`INSERT into tasks (id, title, description, status, created_at, updated_at, author) values (?, ?, ?, ?, ?, ?, ?)`, id, task.Title, task.Description, taskStatusOpen, time.Now(), time.Now(), 1)
 
 	if err != nil {
 		log.Println(err)
@@ -93,7 +93,7 @@ func CreateTask(task Task) (sql.Result, error) {
 	}
 
 	// TODO add handle events by pipe not right here
-	_, err = platform.Db.Exec(`INSERT into tasks_events (task_id, event_type, occurred_on) values (?, ?, ?)`, id, "task_created", time.Now())
+	_, err = taskStorage.db.Exec(`INSERT into tasks_events (task_id, event_type, occurred_on) values (?, ?, ?)`, id, "task_created", time.Now())
 
 	if err != nil {
 		log.Println(err)
