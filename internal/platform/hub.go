@@ -7,20 +7,21 @@ type Hub struct {
 	unregister chan *Client
 }
 
-var CurrentHub *Hub
+var hub *Hub
 
-func InitHub() {
-	CurrentHub = &Hub{
+func InitHub() *Hub {
+	hub = &Hub{
 		clients:    make(map[*Client]bool),
 		Broadcast:  make(chan []byte),
 		register:   make(chan *Client),
 		unregister: make(chan *Client),
 	}
 
-	go CurrentHub.Run()
+	go hub.run()
+	return hub
 }
 
-func (h *Hub) Run() {
+func (h *Hub) run() {
 	for {
 		select {
 		case client := <-h.register:

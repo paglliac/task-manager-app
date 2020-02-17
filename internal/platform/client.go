@@ -106,7 +106,7 @@ func (c *Client) writePump() {
 }
 
 func ServeWs(w http.ResponseWriter, r *http.Request) {
-	h := CurrentHub
+	h := hub
 
 	upgrader.CheckOrigin = func(r *http.Request) bool {
 		return true
