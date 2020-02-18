@@ -20,7 +20,7 @@ type TaskEvent struct {
 	occurredOn string
 }
 
-type TaskUpdate struct {
+type TaskState struct {
 	taskId         string
 	taskName       string
 	unreadComments string
@@ -29,6 +29,7 @@ type TaskUpdate struct {
 type TaskStorage interface {
 	loadTasks(limit int) []Task
 	saveTask(task Task) (sql.Result, error)
+	loadTasksState(userId int) []TaskState
 }
 
 var taskStorage TaskStorage
@@ -43,6 +44,10 @@ func InitTasksModule(db platform.Storage, h *platform.Hub) {
 const (
 	taskStatusOpen = "open"
 )
+
+func LoadTaskStateList(userId int) []TaskState {
+	return taskStorage.loadTasksState(userId)
+}
 
 func LoadTasks(limit int) []Task {
 	return taskStorage.loadTasks(limit)

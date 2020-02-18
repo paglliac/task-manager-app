@@ -4,7 +4,6 @@ import (
 	"encoding/json"
 	"fmt"
 	"github.com/gorilla/mux"
-	"log"
 	"net/http"
 	"strconv"
 	"tasks17-server/internal/tasks"
@@ -17,15 +16,9 @@ func TaskListHandler(w http.ResponseWriter, r *http.Request) {
 		limit = 10
 	}
 
-	tasks := tasks.LoadTasks(limit)
+	tList := tasks.LoadTasks(limit)
 
-	jsonResponse, _ := json.Marshal(tasks)
-
-	_, err = fmt.Fprintf(w, string(jsonResponse))
-
-	if err != nil {
-		log.Println("Can't write response in response writer", err)
-	}
+	jsonResponse(tList, w)
 }
 
 func TaskCreateHandler(w http.ResponseWriter, r *http.Request) {
@@ -84,11 +77,5 @@ func TaskCommentLoadHandler(w http.ResponseWriter, r *http.Request) {
 
 	tasks := tasks.LoadComments(vars["task"], limit)
 
-	jsonResponse, _ := json.Marshal(tasks)
-
-	_, err = fmt.Fprintf(w, string(jsonResponse))
-
-	if err != nil {
-		log.Println("Can't write response in response writer", err)
-	}
+	jsonResponse(tasks, w)
 }

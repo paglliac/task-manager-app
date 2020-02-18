@@ -13,6 +13,9 @@ type SqlTaskStorage struct {
 	db platform.Storage
 }
 
+func (s *SqlTaskStorage) loadTasksState(userId int) []TaskState {
+}
+
 func (s *SqlTaskStorage) loadTasks(limit int) []Task {
 	taskList := make([]Task, 0)
 
