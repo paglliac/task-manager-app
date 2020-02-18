@@ -39,7 +39,8 @@ func LeaveComment(comment TaskComment) (sql.Result, error) {
 	}
 
 	// TODO add handle events by pipe not right here
-	_, err = taskStorage.db.Exec(`INSERT into tasks_events (task_id, event_type, occurred_on) values (?, ?, ?)`, comment.TaskId, "task_comment_left", time.Now())
+	commentJson, err := json.Marshal(comment)
+	_, err = taskStorage.db.Exec(`INSERT into tasks_events (task_id, event_type, payload, occurred_on) values (?, ?, ?, ?)`, comment.TaskId, "task_comment_left", commentJson, time.Now())
 
 	if err != nil {
 		log.Printf("Error while inserting task event %v", err)
