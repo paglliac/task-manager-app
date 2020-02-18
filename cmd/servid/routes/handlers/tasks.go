@@ -92,7 +92,7 @@ func TaskCommentLoadHandler(w http.ResponseWriter, r *http.Request) {
 
 	vars := mux.Vars(r)
 
-	tasks := tasks.LoadComments(vars["comment"], limit)
+	tasks := tasks.LoadComments(vars["task"], limit)
 
 	jsonResponse, _ := json.Marshal(tasks)
 
