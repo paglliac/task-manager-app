@@ -5,7 +5,11 @@ import (
 	"log"
 )
 
-func InitDB() (*sql.DB, error) {
+type Storage struct {
+	*sql.DB
+}
+
+func InitDB() (Storage, error) {
 	db, err := sql.Open("mysql", "root@tcp(localhost:3307)/golang?parseTime=true")
 
 	if err != nil {
@@ -18,5 +22,5 @@ func InitDB() (*sql.DB, error) {
 
 	log.Println("Connection with database established")
 
-	return db, err
+	return Storage{db}, err
 }

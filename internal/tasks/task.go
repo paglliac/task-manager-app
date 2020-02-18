@@ -23,6 +23,12 @@ type TaskEvent struct {
 	occurredOn string
 }
 
+type TaskUpdate struct {
+	taskId         string
+	taskName       string
+	unreadComments string
+}
+
 type TaskStorage interface {
 	loadTasks() []Task
 }
@@ -31,13 +37,13 @@ var taskStorage *SqlTaskStorage
 
 var hub *platform.Hub
 
-func InitTasksModule(db *sql.DB, h *platform.Hub) {
+func InitTasksModule(db platform.Storage, h *platform.Hub) {
 	taskStorage = &SqlTaskStorage{db: db}
 	hub = h
 }
 
 type SqlTaskStorage struct {
-	db *sql.DB
+	db platform.Storage
 }
 
 func (s *SqlTaskStorage) loadTasks(limit int) []Task {
