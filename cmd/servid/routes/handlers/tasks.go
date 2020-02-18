@@ -44,16 +44,6 @@ func TaskCreateHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	//b, err := json.Marshal(t)
-	//// todo process error
-	//
-	//platform.CurrentHub.Broadcast <- b
-
-	//if err != nil {
-	//	http.Error(w, "Something went wrong", 500)
-	//	return
-	//}
-
 	lastInsertId, _ := sqlResult.LastInsertId()
 	fmt.Fprintf(w, "{\"id\": %d}", lastInsertId)
 }
