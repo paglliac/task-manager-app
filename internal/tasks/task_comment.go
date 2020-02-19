@@ -83,3 +83,34 @@ func LoadComments(taskId string, limit int) []TaskComment {
 
 	return taskCommentsList
 }
+
+func UpdateLastWatchedComment(userId int, taskId string, commentId string) {
+	id := findLastEventByCommentId(commentId)
+	log.Println(id)
+	_, err := taskStorage.getDb().Exec(`INSERT into task_last_watched_event (user_id, task_id, last_event_id) values (?, ?, ?) ON DUPLICATE KEY UPDATE last_event_id = ?`, userId, taskId, id, id)
+
+	if err != nil {
+		log.Printf("Error while inserting task event %v", err)
+	}
+}
+
+func findLastEventByCommentId(id string) int {
+	rows, err := taskStorage.getDb().Query("SELECT id FROM tasks_events WHERE event_type = 'task_comment_left' AND payload LIKE ? LIMIT 1", "%"+id+"%")
+	defer rows.Close()
+
+	if err != nil {
+		log.Panic(err)
+	}
+
+	for rows.Next() {
+		var eventId int
+		err = rows.Scan(&eventId)
+
+		if err != nil {
+			log.Println("Error while scanning entity", err)
+		}
+		return eventId
+	}
+
+	return 0
+}

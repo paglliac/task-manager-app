@@ -26,7 +26,7 @@ func (s *SqlTaskStorage) loadTasksState(userId int) (map[string]*TaskState, []Ta
 								 RIGHT JOIN tasks_events te ON t.id = te.task_id
 						WHERE 
 						      (user_id = ? OR user_id IS NULL)
-						  AND (te.id > tlwe.last_event_id OR tlwe.last_event_id IS NULL)`, userId)
+						  AND (te.id > tlwe.last_event_id OR tlwe.last_event_id IS NULL OR te.event_type != 'task_comment_left')`, userId)
 	defer rows.Close()
 
 	if err != nil {

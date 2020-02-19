@@ -77,3 +77,17 @@ func TaskCommentLoadHandler(w http.ResponseWriter, r *http.Request) {
 
 	jsonResponse(comments, w)
 }
+
+func TaskUpdateLastCommentHandler(w http.ResponseWriter, r *http.Request) {
+	type updateLastComment struct {
+		TaskId    string `json:"task_id"`
+		CommentId string `json:"comment_id"`
+		UserId    int    `json:"user_id"`
+	}
+
+	decoder := json.NewDecoder(r.Body)
+	var t updateLastComment
+	decoder.Decode(&t)
+
+	tasks.UpdateLastWatchedComment(t.UserId, t.TaskId, t.CommentId)
+}
