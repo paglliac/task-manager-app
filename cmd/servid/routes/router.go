@@ -22,6 +22,10 @@ func CorsMiddleware(next http.Handler) http.Handler {
 		w.Header().Set("Access-Control-Allow-Methods", "GET,HEAD,OPTIONS,POST,PUT")
 		w.Header().Set("Access-Control-Allow-Headers", "Access-Control-Allow-Headers, Origin,Accept, X-Requested-With, Content-Type, Access-Control-Request-Method, Access-Control-Request-Headers")
 
+		if r.Method == "OPTIONS" {
+			return
+		}
+
 		next.ServeHTTP(w, r)
 	})
 }
@@ -29,11 +33,12 @@ func CorsMiddleware(next http.Handler) http.Handler {
 func CreateRouter() http.Handler {
 	r := mux.NewRouter()
 
-	r.Use(CorsMiddleware)
 	r.Use(LogMiddleware)
+	r.Use(CorsMiddleware)
 
 	// Tasks package routes
 	r.HandleFunc("/tasks", handlers.TaskListHandler).Methods("GET", "OPTIONS")
+	r.HandleFunc("/tasks/state", handlers.TaskStateListHandler).Methods("GET", "OPTIONS")
 	r.HandleFunc("/tasks/add", handlers.TaskCreateHandler).Methods("POST", "OPTIONS")
 	r.HandleFunc("/tasks/{task}/comments", handlers.TaskCommentLoadHandler).Methods("GET", "OPTIONS")
 	r.HandleFunc("/tasks/comments/add", handlers.TaskCommentCreateHandler).Methods("POST", "OPTIONS")

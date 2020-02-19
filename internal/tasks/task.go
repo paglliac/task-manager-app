@@ -15,21 +15,24 @@ type Task struct {
 }
 
 type TaskEvent struct {
-	taskId     int
+	taskId     string
 	eventType  string
-	occurredOn string
+	occurredOn time.Time
+	payload    string
 }
 
 type TaskState struct {
-	taskId         string
-	taskName       string
-	unreadComments string
+	TaskId         string `json:"task_id"`
+	TaskName       string `json:"task_name"`
+	UnreadComments int    `json:"unread_comments"`
 }
 
 type TaskStorage interface {
 	loadTasks(limit int) []Task
 	saveTask(task Task) (sql.Result, error)
-	loadTasksState(userId int) []TaskState
+	loadTasksState(userId int) (map[string]*TaskState, []TaskEvent)
+	// TODO hack for not refactoring task_comment db interactions need fix asap
+	getDb() *platform.Storage
 }
 
 var taskStorage TaskStorage
@@ -45,8 +48,15 @@ const (
 	taskStatusOpen = "open"
 )
 
-func LoadTaskStateList(userId int) []TaskState {
-	return taskStorage.loadTasksState(userId)
+func LoadTaskStateList(userId int) map[string]*TaskState {
+	states, events := taskStorage.loadTasksState(userId)
+	for _, event := range events {
+		if event.eventType == "task_comment_left" {
+			states[event.taskId].UnreadComments++
+		}
+	}
+
+	return states
 }
 
 func LoadTasks(limit int) []Task {

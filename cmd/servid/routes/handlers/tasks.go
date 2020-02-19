@@ -21,6 +21,12 @@ func TaskListHandler(w http.ResponseWriter, r *http.Request) {
 	jsonResponse(tList, w)
 }
 
+func TaskStateListHandler(w http.ResponseWriter, r *http.Request) {
+	tList := tasks.LoadTaskStateList(1)
+
+	jsonResponse(tList, w)
+}
+
 func TaskCreateHandler(w http.ResponseWriter, r *http.Request) {
 	if r.Method == "OPTIONS" {
 		return
@@ -42,10 +48,6 @@ func TaskCreateHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 func TaskCommentCreateHandler(w http.ResponseWriter, r *http.Request) {
-	if r.Method == "OPTIONS" {
-		return
-	}
-
 	decoder := json.NewDecoder(r.Body)
 
 	var comment tasks.TaskComment
@@ -63,10 +65,6 @@ func TaskCommentCreateHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 func TaskCommentLoadHandler(w http.ResponseWriter, r *http.Request) {
-	if r.Method == "OPTIONS" {
-		return
-	}
-
 	limit, err := strconv.Atoi(r.URL.Query().Get("limit"))
 
 	if err != nil {
@@ -75,7 +73,7 @@ func TaskCommentLoadHandler(w http.ResponseWriter, r *http.Request) {
 
 	vars := mux.Vars(r)
 
-	tasks := tasks.LoadComments(vars["task"], limit)
+	comments := tasks.LoadComments(vars["task"], limit)
 
-	jsonResponse(tasks, w)
+	jsonResponse(comments, w)
 }
