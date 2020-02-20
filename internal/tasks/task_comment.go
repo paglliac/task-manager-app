@@ -56,10 +56,10 @@ func LeaveComment(comment TaskComment) (sql.Result, error) {
 	return r, nil
 }
 
-func LoadComments(taskId string, limit int) []TaskComment {
+func LoadComments(taskId string) []TaskComment {
 	taskCommentsList := make([]TaskComment, 0)
 
-	rows, err := taskStorage.getDb().Query("SELECT id, task_id, message, author, created_at FROM task_comments WHERE task_id= ? ORDER BY created_at LIMIT ?", taskId, limit)
+	rows, err := taskStorage.getDb().Query("SELECT id, task_id, message, author, created_at FROM task_comments WHERE task_id= ? ORDER BY created_at", taskId)
 	defer rows.Close()
 
 	if err != nil {

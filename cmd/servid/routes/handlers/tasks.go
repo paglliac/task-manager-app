@@ -65,15 +65,9 @@ func TaskCommentCreateHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 func TaskCommentLoadHandler(w http.ResponseWriter, r *http.Request) {
-	limit, err := strconv.Atoi(r.URL.Query().Get("limit"))
-
-	if err != nil {
-		limit = 10
-	}
-
 	vars := mux.Vars(r)
 
-	comments := tasks.LoadComments(vars["task"], limit)
+	comments := tasks.LoadComments(vars["task"])
 
 	jsonResponse(comments, w)
 }
