@@ -41,7 +41,7 @@ func CreateRouter() http.Handler {
 	r.HandleFunc("/tasks/state", handlers.TaskStateListHandler).Methods("GET", "OPTIONS")
 	r.HandleFunc("/tasks/add", handlers.TaskCreateHandler).Methods("POST", "OPTIONS")
 	r.HandleFunc("/tasks/update-last-event", handlers.TaskUpdateLastCommentHandler).Methods("POST", "OPTIONS")
-	r.HandleFunc("/tasks/{task}/comments", handlers.TaskCommentLoadHandler).Methods("GET", "OPTIONS")
+	r.HandleFunc("/tasks/{task}", handlers.TaskLoadHandler).Methods("GET", "OPTIONS")
 	r.HandleFunc("/tasks/comments/add", handlers.TaskCommentCreateHandler).Methods("POST", "OPTIONS")
 
 	// WebSocket Server

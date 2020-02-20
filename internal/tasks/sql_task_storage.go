@@ -13,20 +13,12 @@ type SqlTaskStorage struct {
 	db platform.Storage
 }
 
-func (s *SqlTaskStorage) getDb() *platform.Storage {
-	return &s.db
-}
-
-func (s *SqlTaskStorage) loadTasksState(userId int) (map[string]*TaskState, []TaskEvent) {
+func (s *SqlTaskStorage) loadStates(userId int) map[string]*TaskState {
+	rows, err := s.db.Query("SELECT id, title FROM tasks")
 	states := make(map[string]*TaskState)
-	events := make([]TaskEvent, 0)
-	rows, err := s.db.Query(`SELECT t.id, te.id, t.title, te.event_type, te.payload, te.occurred_on
-						FROM tasks t
-								 LEFT JOIN task_last_watched_event tlwe ON t.id = tlwe.task_id
-								 RIGHT JOIN tasks_events te ON t.id = te.task_id
-						WHERE 
-						      (user_id = ? OR user_id IS NULL)
-						  AND (te.id > tlwe.last_event_id OR tlwe.last_event_id IS NULL OR te.event_type != 'task_comment_left')`, userId)
+
+	// This need to avoid unused parameter, but user id not used at the moment
+	log.Println(userId)
 	defer rows.Close()
 
 	if err != nil {
@@ -34,41 +26,67 @@ func (s *SqlTaskStorage) loadTasksState(userId int) (map[string]*TaskState, []Ta
 	}
 
 	for rows.Next() {
-
-		var (
-			eventType  string
-			taskId     string
-			eventId    int
-			title      string
-			payload    sql.NullString
-			occurredOn time.Time
-		)
-
-		err = rows.Scan(&taskId, &eventId, &title, &eventType, &payload, &occurredOn)
+		var s TaskState
+		err = rows.Scan(&s.TaskId, &s.TaskTitle)
 
 		if err != nil {
 			log.Println("Error while scanning entity", err)
 		} else {
-			if _, ok := states[taskId]; !ok {
-				var s TaskState
-				s.TaskId = taskId
-				s.TaskName = title
+			states[s.TaskId] = &s
+		}
+	}
 
-				states[taskId] = &s
-			}
+	return states
+}
 
-			var e TaskEvent
+func (s *SqlTaskStorage) getDb() *platform.Storage {
+	return &s.db
+}
 
-			e.taskId = taskId
-			e.occurredOn = occurredOn
-			e.eventType = eventType
-			e.payload = payload.String
+func (s *SqlTaskStorage) loadEvents(userId int) []TaskEvent {
+	events := make([]TaskEvent, 0)
+	rows, err := s.db.Query(`SELECT t.id, te.id, t.title, te.event_type, te.payload, te.occurred_on
+						FROM tasks t
+								 LEFT JOIN task_last_watched_event tlwe ON t.id = tlwe.task_id
+								 RIGHT JOIN tasks_events te ON t.id = te.task_id
+						WHERE 
+						      (user_id = ? OR user_id IS NULL)
+						  AND (te.id > tlwe.last_event_id OR tlwe.last_event_id IS NULL)`, userId)
+	defer rows.Close()
 
+	if err != nil {
+		log.Panic(err)
+	}
+
+	for rows.Next() {
+		var payload sql.NullString
+		var e TaskEvent
+
+		err = rows.Scan(&e.taskId, &e.eventType, &payload, &e.occurredOn)
+		e.payload = payload.String
+
+		if err != nil {
+			log.Println("Error while scanning entity", err)
+		} else {
 			events = append(events, e)
 		}
 	}
 
-	return states, events
+	return events
+}
+
+func (s *SqlTaskStorage) loadTask(taskId string) Task {
+	row := s.db.QueryRow("SELECT id, title, description, status, created_at FROM tasks WHERE id = ?", taskId)
+
+	var task Task
+
+	err := row.Scan(&task.Id, &task.Title, &task.Description, &task.Status, &task.CreatedAt)
+
+	if err != nil {
+		log.Println("Error while scanning entity", err)
+	}
+
+	return task
 }
 
 func (s *SqlTaskStorage) loadTasks(limit int) []Task {

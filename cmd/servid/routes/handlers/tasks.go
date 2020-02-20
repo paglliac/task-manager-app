@@ -64,12 +64,21 @@ func TaskCommentCreateHandler(w http.ResponseWriter, r *http.Request) {
 	fmt.Fprintf(w, "{\"id\": %d}", lastInsertId)
 }
 
-func TaskCommentLoadHandler(w http.ResponseWriter, r *http.Request) {
+func TaskLoadHandler(w http.ResponseWriter, r *http.Request) {
+	type response struct {
+		Task     tasks.Task          `json:"task"`
+		Comments []tasks.TaskComment `json:"comments"`
+	}
+
+	var rs response
+
 	vars := mux.Vars(r)
 
-	comments := tasks.LoadComments(vars["task"])
+	taskId := vars["task"]
+	rs.Comments = tasks.LoadComments(taskId)
+	rs.Task = tasks.LoadTask(taskId)
 
-	jsonResponse(comments, w)
+	jsonResponse(rs, w)
 }
 
 func TaskUpdateLastCommentHandler(w http.ResponseWriter, r *http.Request) {

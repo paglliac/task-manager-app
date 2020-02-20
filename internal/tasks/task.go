@@ -2,6 +2,7 @@ package tasks
 
 import (
 	"database/sql"
+	"log"
 	"tasks17-server/internal/platform"
 	"time"
 )
@@ -23,14 +24,16 @@ type TaskEvent struct {
 
 type TaskState struct {
 	TaskId         string `json:"task_id"`
-	TaskName       string `json:"task_name"`
+	TaskTitle      string `json:"task_title"`
 	UnreadComments int    `json:"unread_comments"`
 }
 
 type TaskStorage interface {
 	loadTasks(limit int) []Task
+	loadTask(taskId string) Task
 	saveTask(task Task) (sql.Result, error)
-	loadTasksState(userId int) (map[string]*TaskState, []TaskEvent)
+	loadStates(userId int) map[string]*TaskState
+	loadEvents(userId int) []TaskEvent
 	// TODO hack for not refactoring task_comment db interactions need fix asap
 	getDb() *platform.Storage
 }
@@ -49,14 +52,24 @@ const (
 )
 
 func LoadTaskStateList(userId int) map[string]*TaskState {
-	states, events := taskStorage.loadTasksState(userId)
+	events := taskStorage.loadEvents(userId)
+	states := taskStorage.loadStates(1)
+
 	for _, event := range events {
 		if event.eventType == "task_comment_left" {
-			states[event.taskId].UnreadComments++
+			if _, ok := states[event.taskId]; ok {
+				states[event.taskId].UnreadComments++
+			} else {
+				log.Println("ERR event for not exists task")
+			}
 		}
 	}
 
 	return states
+}
+
+func LoadTask(taskId string) Task {
+	return taskStorage.loadTask(taskId)
 }
 
 func LoadTasks(limit int) []Task {
