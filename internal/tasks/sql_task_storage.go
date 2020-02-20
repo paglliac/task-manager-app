@@ -45,7 +45,7 @@ func (s *SqlTaskStorage) getDb() *platform.Storage {
 
 func (s *SqlTaskStorage) loadEvents(userId int) []TaskEvent {
 	events := make([]TaskEvent, 0)
-	rows, err := s.db.Query(`SELECT t.id, te.id, t.title, te.event_type, te.payload, te.occurred_on
+	rows, err := s.db.Query(`SELECT t.id, te.event_type, te.payload, te.occurred_on
 						FROM tasks t
 								 LEFT JOIN task_last_watched_event tlwe ON t.id = tlwe.task_id
 								 RIGHT JOIN tasks_events te ON t.id = te.task_id
