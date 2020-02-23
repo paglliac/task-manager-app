@@ -2,7 +2,7 @@
 --
 -- Host: localhost    Database: golang
 -- ------------------------------------------------------
--- Server version       5.7.27
+-- Server version	5.7.27
 
 /*!40101 SET @OLD_CHARACTER_SET_CLIENT = @@CHARACTER_SET_CLIENT */;
 /*!40101 SET @OLD_CHARACTER_SET_RESULTS = @@CHARACTER_SET_RESULTS */;
@@ -87,6 +87,23 @@ CREATE TABLE `task_labels`
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
+-- Table structure for table `task_last_watched_event`
+--
+
+DROP TABLE IF EXISTS `task_last_watched_event`;
+/*!40101 SET @saved_cs_client = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `task_last_watched_event`
+(
+    `user_id`       int(11)  NOT NULL,
+    `task_id`       char(36) NOT NULL,
+    `last_event_id` int(11)  NOT NULL,
+    PRIMARY KEY (`user_id`, `task_id`)
+) ENGINE = InnoDB
+  DEFAULT CHARSET = latin1;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
 -- Table structure for table `tasks`
 --
 
@@ -129,7 +146,7 @@ CREATE TABLE `tasks_events`
     KEY `tasks_events_tasks_id_fk` (`task_id`),
     CONSTRAINT `tasks_events_tasks_id_fk` FOREIGN KEY (`task_id`) REFERENCES `tasks` (`id`) ON DELETE CASCADE ON UPDATE CASCADE
 ) ENGINE = InnoDB
-  AUTO_INCREMENT = 52
+  AUTO_INCREMENT = 76
   DEFAULT CHARSET = latin1;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
@@ -148,7 +165,7 @@ CREATE TABLE `users`
     `password` varchar(256) DEFAULT NULL,
     PRIMARY KEY (`id`)
 ) ENGINE = InnoDB
-  AUTO_INCREMENT = 3
+  AUTO_INCREMENT = 2
   DEFAULT CHARSET = latin1;
 /*!40101 SET character_set_client = @saved_cs_client */;
 /*!40103 SET TIME_ZONE = @OLD_TIME_ZONE */;
@@ -161,4 +178,4 @@ CREATE TABLE `users`
 /*!40101 SET COLLATION_CONNECTION = @OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES = @OLD_SQL_NOTES */;
 
--- Dump completed on 2020-02-17 14:59:29
+-- Dump completed on 2020-02-23  3:46:33

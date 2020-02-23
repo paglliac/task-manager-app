@@ -13,6 +13,8 @@ https://github.com/golang/go/wiki/Ubuntu
 
 `docker-compose up -d`
 
+load dump from file to mysql
+
 `go build ./cmd/servid/servid.go`
 
 `./servid`
