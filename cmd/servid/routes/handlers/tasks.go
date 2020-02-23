@@ -22,7 +22,8 @@ func TaskListHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 func TaskStateListHandler(w http.ResponseWriter, r *http.Request) {
-	tList := tasks.LoadTaskStateList(1)
+	authorId, _ := strconv.Atoi(r.Header.Get("Authorization"))
+	tList := tasks.LoadTaskStateList(authorId)
 
 	jsonResponse(tList, w)
 }
@@ -52,6 +53,8 @@ func TaskCommentCreateHandler(w http.ResponseWriter, r *http.Request) {
 
 	var comment tasks.TaskComment
 	decoder.Decode(&comment)
+	authorId, err := strconv.Atoi(r.Header.Get("Authorization"))
+	comment.Author = authorId
 
 	sqlResult, err := tasks.LeaveComment(comment)
 
@@ -85,12 +88,15 @@ func TaskUpdateLastCommentHandler(w http.ResponseWriter, r *http.Request) {
 	type updateLastComment struct {
 		TaskId    string `json:"task_id"`
 		CommentId string `json:"comment_id"`
-		UserId    int    `json:"user_id"`
+		UserId    int    `json:"-"`
 	}
+
+	userId, _ := strconv.Atoi(r.Header.Get("Authorization"))
 
 	decoder := json.NewDecoder(r.Body)
 	var t updateLastComment
 	decoder.Decode(&t)
+	t.UserId = userId
 
 	tasks.UpdateLastWatchedComment(t.UserId, t.TaskId, t.CommentId)
 }

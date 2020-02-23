@@ -53,7 +53,7 @@ const (
 
 func LoadTaskStateList(userId int) map[string]*TaskState {
 	events := taskStorage.loadEvents(userId)
-	states := taskStorage.loadStates(1)
+	states := taskStorage.loadStates(userId)
 
 	for _, event := range events {
 		if event.eventType == "task_comment_left" {

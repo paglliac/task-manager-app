@@ -5,6 +5,7 @@ import (
 	"log"
 	"net/http"
 	"tasks17-server/cmd/servid/routes"
+	"tasks17-server/internal/auth"
 	"tasks17-server/internal/platform"
 	"tasks17-server/internal/tasks"
 	"time"
@@ -22,6 +23,7 @@ func main() {
 	r := routes.CreateRouter()
 
 	tasks.InitTasksModule(db, hub)
+	auth.InitAuthModule(db)
 
 	log.Println("Server have been started listening on port 8080")
 
