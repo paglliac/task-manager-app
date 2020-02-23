@@ -4,6 +4,7 @@ import (
 	"github.com/gorilla/mux"
 	"log"
 	"net/http"
+	"net/url"
 	"tasks17-server/cmd/servid/routes/handlers"
 	"tasks17-server/internal/platform"
 )
@@ -18,7 +19,8 @@ func LogMiddleware(next http.Handler) http.Handler {
 
 func CorsMiddleware(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		w.Header().Set("Access-Control-Allow-Origin", "http://"+r.Host)
+		url, _ := url.Parse(r.Header.Get("Referer"))
+		w.Header().Set("Access-Control-Allow-Origin", "http://"+url.Host)
 		w.Header().Set("Access-Control-Allow-Methods", "GET,HEAD,OPTIONS,POST,PUT")
 		w.Header().Set("Access-Control-Allow-Headers", "Access-Control-Allow-Headers, Origin,Accept, X-Requested-With, Content-Type, Access-Control-Request-Method, Access-Control-Request-Headers, Authorization")
 
