@@ -37,6 +37,9 @@ func TaskCreateHandler(w http.ResponseWriter, r *http.Request) {
 	var t tasks.Task
 	decoder.Decode(&t)
 
+	authorId, _ := strconv.Atoi(r.Header.Get("Authorization"))
+	t.AuthorId = authorId
+
 	sqlResult, err := tasks.CreateTask(t)
 
 	if err != nil {

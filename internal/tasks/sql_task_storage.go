@@ -122,7 +122,7 @@ func (s *SqlTaskStorage) saveTask(task Task) (sql.Result, error) {
 		return nil, fmt.Errorf("error while generated uuid %v", err)
 	}
 
-	r, err := s.db.Exec(`INSERT into tasks (id, title, description, status, created_at, updated_at, author) values (?, ?, ?, ?, ?, ?, ?)`, id, task.Title, task.Description, taskStatusOpen, time.Now(), time.Now(), 1)
+	r, err := s.db.Exec(`INSERT into tasks (id, title, description, status, created_at, updated_at, author) values (?, ?, ?, ?, ?, ?, ?)`, id, task.Title, task.Description, taskStatusOpen, time.Now(), time.Now(), task.AuthorId)
 
 	if err != nil {
 		log.Println(err)
