@@ -9,11 +9,12 @@ import (
 )
 
 type TaskComment struct {
-	Id        string    `json:"id"`
-	TaskId    string    `json:"task_id"`
-	Message   string    `json:"message"`
-	Author    int       `json:"author"`
-	CreatedAt time.Time `json:"created_at"`
+	Id         string    `json:"id"`
+	TaskId     string    `json:"task_id"`
+	Message    string    `json:"message"`
+	Author     int       `json:"author"`
+	AuthorName string    `json:"author_name"`
+	CreatedAt  time.Time `json:"created_at"`
 }
 
 type WsEvent struct {
@@ -59,7 +60,7 @@ func LeaveComment(comment TaskComment) (sql.Result, error) {
 func LoadComments(taskId string) []TaskComment {
 	taskCommentsList := make([]TaskComment, 0)
 
-	rows, err := taskStorage.getDb().Query("SELECT id, task_id, message, author, created_at FROM task_comments WHERE task_id= ? ORDER BY created_at", taskId)
+	rows, err := taskStorage.getDb().Query("SELECT task_comments.id, task_id, message, author, users.name, created_at FROM task_comments LEFT JOIN users ON users.id = task_comments.author WHERE task_id= ? ORDER BY created_at", taskId)
 	defer rows.Close()
 
 	if err != nil {
@@ -68,7 +69,7 @@ func LoadComments(taskId string) []TaskComment {
 
 	for rows.Next() {
 		var taskComment TaskComment
-		err = rows.Scan(&taskComment.Id, &taskComment.TaskId, &taskComment.Message, &taskComment.Author, &taskComment.CreatedAt)
+		err = rows.Scan(&taskComment.Id, &taskComment.TaskId, &taskComment.Message, &taskComment.Author, &taskComment.AuthorName, &taskComment.CreatedAt)
 
 		if err != nil {
 			log.Println("Error while scanning entity", err)
