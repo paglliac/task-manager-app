@@ -14,6 +14,20 @@ type SqlTaskStorage struct {
 	db platform.Storage
 }
 
+func (s *SqlTaskStorage) closeTask(id string) error {
+	r, err := s.db.Exec("UPDATE tasks SET status = ? WHERE id = ?", "closed", id)
+
+	if err != nil {
+		return err
+	}
+
+	if affected, _ := r.RowsAffected(); affected != 1 {
+		return errors.New(fmt.Sprintf("task with id: %s not found", id))
+	}
+
+	return nil
+}
+
 func (s *SqlTaskStorage) updateDescription(taskId string, description string) error {
 	r, err := s.db.Exec("UPDATE tasks SET description = ? WHERE id = ?", description, taskId)
 
@@ -29,7 +43,7 @@ func (s *SqlTaskStorage) updateDescription(taskId string, description string) er
 }
 
 func (s *SqlTaskStorage) loadStates(userId int) map[string]*TaskState {
-	rows, err := s.db.Query("SELECT id, title FROM tasks")
+	rows, err := s.db.Query("SELECT id, title FROM tasks where status = 'open'")
 	states := make(map[string]*TaskState)
 
 	// This need to avoid unused parameter, but user id not used at the moment

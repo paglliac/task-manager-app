@@ -110,8 +110,6 @@ func TaskUpdateDescription(w http.ResponseWriter, r *http.Request) {
 		Description string `json:"description"`
 	}
 
-	//TODO add check is it possible to user change description here
-	//userId, _ := strconv.Atoi(r.Header.Get("Authorization"))
 	d := json.NewDecoder(r.Body)
 
 	var nd newDescription
@@ -122,6 +120,19 @@ func TaskUpdateDescription(w http.ResponseWriter, r *http.Request) {
 
 	task := tasks.Task{Id: taskId}
 	err := task.UpdateDescription(nd.Description)
+
+	if err != nil {
+		log.Println(err)
+	}
+}
+
+func TaskClose(w http.ResponseWriter, r *http.Request) {
+	vars := mux.Vars(r)
+
+	taskId := vars["task"]
+
+	task := tasks.Task{Id: taskId}
+	err := task.Close()
 
 	if err != nil {
 		log.Println(err)

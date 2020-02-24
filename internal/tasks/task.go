@@ -20,6 +20,10 @@ func (t Task) UpdateDescription(description string) error {
 	return taskStorage.updateDescription(t.Id, description)
 }
 
+func (t Task) Close() error {
+	return taskStorage.closeTask(t.Id)
+}
+
 type TaskEvent struct {
 	taskId     string
 	eventType  string
@@ -42,6 +46,7 @@ type TaskStorage interface {
 	// TODO hack for not refactoring task_comment db interactions need fix asap
 	getDb() *platform.Storage
 	updateDescription(taskId string, description string) error
+	closeTask(id string) error
 }
 
 var taskStorage TaskStorage
