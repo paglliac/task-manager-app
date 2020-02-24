@@ -16,6 +16,10 @@ type Task struct {
 	AuthorId    int
 }
 
+func (t Task) UpdateDescription(description string) error {
+	return taskStorage.updateDescription(t.Id, description)
+}
+
 type TaskEvent struct {
 	taskId     string
 	eventType  string
@@ -37,6 +41,7 @@ type TaskStorage interface {
 	loadEvents(userId int) []TaskEvent
 	// TODO hack for not refactoring task_comment db interactions need fix asap
 	getDb() *platform.Storage
+	updateDescription(taskId string, description string) error
 }
 
 var taskStorage TaskStorage

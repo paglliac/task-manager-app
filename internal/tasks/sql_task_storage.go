@@ -2,6 +2,7 @@ package tasks
 
 import (
 	"database/sql"
+	"errors"
 	"fmt"
 	"github.com/google/uuid"
 	"log"
@@ -11,6 +12,20 @@ import (
 
 type SqlTaskStorage struct {
 	db platform.Storage
+}
+
+func (s *SqlTaskStorage) updateDescription(taskId string, description string) error {
+	r, err := s.db.Exec("UPDATE tasks SET description = ? WHERE id = ?", description, taskId)
+
+	if err != nil {
+		return err
+	}
+
+	if affected, _ := r.RowsAffected(); affected != 1 {
+		return errors.New(fmt.Sprintf("task with id: %s not found", taskId))
+	}
+
+	return nil
 }
 
 func (s *SqlTaskStorage) loadStates(userId int) map[string]*TaskState {

@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"github.com/gorilla/mux"
+	"log"
 	"net/http"
 	"strconv"
 	"tasks17-server/internal/tasks"
@@ -102,4 +103,27 @@ func TaskUpdateLastCommentHandler(w http.ResponseWriter, r *http.Request) {
 	t.UserId = userId
 
 	tasks.UpdateLastWatchedComment(t.UserId, t.TaskId, t.CommentId)
+}
+
+func TaskUpdateDescription(w http.ResponseWriter, r *http.Request) {
+	type newDescription struct {
+		Description string `json:"description"`
+	}
+
+	//TODO add check is it possible to user change description here
+	//userId, _ := strconv.Atoi(r.Header.Get("Authorization"))
+	d := json.NewDecoder(r.Body)
+
+	var nd newDescription
+	d.Decode(&nd)
+	vars := mux.Vars(r)
+
+	taskId := vars["task"]
+
+	task := tasks.Task{Id: taskId}
+	err := task.UpdateDescription(nd.Description)
+
+	if err != nil {
+		log.Println(err)
+	}
 }
