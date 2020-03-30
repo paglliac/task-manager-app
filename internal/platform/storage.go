@@ -2,6 +2,7 @@ package platform
 
 import (
 	"database/sql"
+	"fmt"
 	"log"
 )
 
@@ -9,10 +10,8 @@ type Storage struct {
 	*sql.DB
 }
 
-func InitDB() (Storage, error) {
-	connStr := "postgres://postgres:tasks17@localhost/tasks17?sslmode=disable"
-	db, err := sql.Open("postgres", connStr)
-	//db, err := sql.Open("postgres", "root:tasks17@tcp(localhost:3308)/tasks17?parseTime=true")
+func InitDB(dbHost string) (Storage, error) {
+	db, err := sql.Open("postgres", fmt.Sprintf("postgres://postgres:tasks17@%s/tasks17?sslmode=disable", dbHost))
 
 	if err != nil {
 		log.Panic(err)

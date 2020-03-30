@@ -1,7 +1,6 @@
 package auth
 
 import (
-	"log"
 	"tasks17-server/internal/platform"
 )
 
@@ -12,8 +11,7 @@ func InitAuthModule(db platform.Storage) {
 }
 
 func CheckAuth(email string, password string) (id int, err error) {
-	log.Printf("Email is %s, password is %s", email, password)
-	row := storage.QueryRow("SELECT id from users where email=? and password=?", email, password)
+	row := storage.QueryRow("SELECT id from users where email=$1 and password=$2", email, password)
 
 	err = row.Scan(&id)
 
