@@ -10,7 +10,9 @@ type Storage struct {
 }
 
 func InitDB() (Storage, error) {
-	db, err := sql.Open("mysql", "root@tcp(localhost:3307)/golang?parseTime=true")
+	connStr := "postgres://postgres:tasks17@localhost/tasks17?sslmode=disable"
+	db, err := sql.Open("postgres", connStr)
+	//db, err := sql.Open("postgres", "root:tasks17@tcp(localhost:3308)/tasks17?parseTime=true")
 
 	if err != nil {
 		log.Panic(err)

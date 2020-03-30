@@ -15,7 +15,7 @@ type SqlTaskStorage struct {
 }
 
 func (s *SqlTaskStorage) closeTask(id string) error {
-	r, err := s.db.Exec("UPDATE tasks SET status = ? WHERE id = ?", "closed", id)
+	r, err := s.db.Exec("UPDATE tasks SET status = $1 WHERE id = $2", "closed", id)
 
 	if err != nil {
 		return err
@@ -29,7 +29,7 @@ func (s *SqlTaskStorage) closeTask(id string) error {
 }
 
 func (s *SqlTaskStorage) updateDescription(taskId string, description string) error {
-	r, err := s.db.Exec("UPDATE tasks SET description = ? WHERE id = ?", description, taskId)
+	r, err := s.db.Exec("UPDATE tasks SET description = $1 WHERE id = $2", description, taskId)
 
 	if err != nil {
 		return err
@@ -76,7 +76,7 @@ func (s *SqlTaskStorage) loadEvents(userId int) []TaskEvent {
 	events := make([]TaskEvent, 0)
 	rows, err := s.db.Query(`SELECT te.task_id, te.event_type, te.payload, te.occurred_on 
 										FROM tasks_events te
-										LEFT JOIN task_last_watched_event tlwe ON te.task_id = tlwe.task_id AND tlwe.user_id = ?
+										LEFT JOIN task_last_watched_event tlwe ON te.task_id = tlwe.task_id AND tlwe.user_id = $1
 									WHERE te.id > tlwe.last_event_id or tlwe.last_event_id IS NULL`, userId)
 	defer rows.Close()
 
@@ -102,7 +102,7 @@ func (s *SqlTaskStorage) loadEvents(userId int) []TaskEvent {
 }
 
 func (s *SqlTaskStorage) loadTask(taskId string) Task {
-	row := s.db.QueryRow("SELECT id, title, description, status, created_at FROM tasks WHERE id = ?", taskId)
+	row := s.db.QueryRow("SELECT id, title, description, status, created_at FROM tasks WHERE id = $1", taskId)
 
 	var task Task
 
@@ -118,7 +118,7 @@ func (s *SqlTaskStorage) loadTask(taskId string) Task {
 func (s *SqlTaskStorage) loadTasks(limit int) []Task {
 	taskList := make([]Task, 0)
 
-	rows, err := s.db.Query("SELECT id, title, description, status, created_at FROM tasks limit ?", limit)
+	rows, err := s.db.Query("SELECT id, title, description, status, created_at FROM tasks limit $1", limit)
 	defer rows.Close()
 
 	if err != nil {
@@ -151,15 +151,15 @@ func (s *SqlTaskStorage) saveTask(task Task) (sql.Result, error) {
 		return nil, fmt.Errorf("error while generated uuid %v", err)
 	}
 
-	r, err := s.db.Exec(`INSERT into tasks (id, title, description, status, created_at, updated_at, author) values (?, ?, ?, ?, ?, ?, ?)`, id, task.Title, task.Description, taskStatusOpen, time.Now(), time.Now(), task.AuthorId)
+	r, err := s.db.Exec(`INSERT into tasks (id, title, description, status, created_at, updated_at, author) values ($1, $2, $3, $4, $5, $6, $7)`, id, task.Title, task.Description, taskStatusOpen, time.Now(), time.Now(), task.AuthorId)
 
 	if err != nil {
-		log.Println(err)
+		log.Printf("[saveTask] error while saving tasks: %v", err)
 		return nil, err
 	}
 
 	// TODO add handle events by pipe not right here
-	_, err = s.db.Exec(`INSERT into tasks_events (task_id, event_type, occurred_on) values (?, ?, ?)`, id, "task_created", time.Now())
+	_, err = s.db.Exec(`INSERT into tasks_events (task_id, event_type, occurred_on) values ($1, $2, $3)`, id, "task_created", time.Now())
 
 	if err != nil {
 		log.Println(err)

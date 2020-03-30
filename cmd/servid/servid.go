@@ -1,7 +1,7 @@
 package main
 
 import (
-	_ "github.com/go-sql-driver/mysql"
+	_ "github.com/lib/pq"
 	"log"
 	"net/http"
 	"tasks17-server/cmd/servid/routes"

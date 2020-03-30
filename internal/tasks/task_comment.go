@@ -32,7 +32,7 @@ func LeaveComment(comment TaskComment) (sql.Result, error) {
 	comment.CreatedAt = time.Now()
 	comment.Id = id.String()
 
-	r, err := taskStorage.getDb().Exec("INSERT INTO task_comments (id, author, message, created_at, task_id) values (?,?,?,?,?)", comment.Id, comment.Author, comment.Message, comment.CreatedAt, comment.TaskId)
+	r, err := taskStorage.getDb().Exec("INSERT INTO task_comments (id, author, message, created_at, task_id) values ($1,$2,$3,$4,$5)", comment.Id, comment.Author, comment.Message, comment.CreatedAt, comment.TaskId)
 
 	if err != nil {
 		log.Printf("Error while inserting task comment %v", err)
@@ -41,7 +41,7 @@ func LeaveComment(comment TaskComment) (sql.Result, error) {
 
 	// TODO add handle events by pipe not right here
 	commentJson, err := json.Marshal(comment)
-	_, err = taskStorage.getDb().Exec(`INSERT into tasks_events (task_id, event_type, payload, occurred_on) values (?, ?, ?, ?)`, comment.TaskId, "task_comment_left", commentJson, time.Now())
+	_, err = taskStorage.getDb().Exec(`INSERT into tasks_events (task_id, event_type, payload, occurred_on) values ($1, $2, $3, $4)`, comment.TaskId, "task_comment_left", commentJson, time.Now())
 
 	if err != nil {
 		log.Printf("Error while inserting task event %v", err)
@@ -60,7 +60,7 @@ func LeaveComment(comment TaskComment) (sql.Result, error) {
 func LoadComments(taskId string) []TaskComment {
 	taskCommentsList := make([]TaskComment, 0)
 
-	rows, err := taskStorage.getDb().Query("SELECT task_comments.id, task_id, message, author, users.name, created_at FROM task_comments LEFT JOIN users ON users.id = task_comments.author WHERE task_id= ? ORDER BY created_at", taskId)
+	rows, err := taskStorage.getDb().Query("SELECT task_comments.id, task_id, message, author, users.name, created_at FROM task_comments LEFT JOIN users ON users.id = task_comments.author WHERE task_id= $1 ORDER BY created_at", taskId)
 	defer rows.Close()
 
 	if err != nil {
@@ -88,7 +88,7 @@ func LoadComments(taskId string) []TaskComment {
 func UpdateLastWatchedComment(userId int, taskId string, commentId string) {
 	id := findLastEventByCommentId(commentId)
 	log.Println(id)
-	_, err := taskStorage.getDb().Exec(`INSERT into task_last_watched_event (user_id, task_id, last_event_id) values (?, ?, ?) ON DUPLICATE KEY UPDATE last_event_id = ?`, userId, taskId, id, id)
+	_, err := taskStorage.getDb().Exec(`INSERT into task_last_watched_event (user_id, task_id, last_event_id) values ($1, $2, $3) ON CONFLICT (user_id, task_id) DO UPDATE SET last_event_id = $3`, userId, taskId, id)
 
 	if err != nil {
 		log.Printf("Error while inserting task event %v", err)
@@ -96,7 +96,7 @@ func UpdateLastWatchedComment(userId int, taskId string, commentId string) {
 }
 
 func findLastEventByCommentId(id string) int {
-	rows, err := taskStorage.getDb().Query("SELECT id FROM tasks_events WHERE event_type = 'task_comment_left' AND payload LIKE ? LIMIT 1", "%"+id+"%")
+	rows, err := taskStorage.getDb().Query("SELECT id FROM tasks_events WHERE event_type = 'task_comment_left' AND payload LIKE $1 LIMIT 1", "%"+id+"%")
 	defer rows.Close()
 
 	if err != nil {

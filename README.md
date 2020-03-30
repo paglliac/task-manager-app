@@ -17,4 +17,10 @@ load dump from file to mysql
 
 `go build ./cmd/servid/servid.go`
 
+`export POSTGRESQL_URL=postgres://postgres:tasks17@localhost/tasks17?sslmode=disable`
+
+`migrate -database ${POSTGRESQL_URL} -path database/migrations up `
+
+`go run cmd/servi/servi.go createUser -username=kir -email=kir@gangsterelephant.io -password=kir`
+
 `./servid`

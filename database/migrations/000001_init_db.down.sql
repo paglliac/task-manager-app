@@ -1,0 +1,2 @@
+DROP TABLE IF EXISTS tasks_events;
+DROP TABLE IF EXISTS tasks;
