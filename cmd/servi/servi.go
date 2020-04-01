@@ -10,7 +10,8 @@ import (
 )
 
 func main() {
-	db, err := platform.InitDB()
+	dbHost := os.Getenv("DB_HOST")
+	db, err := platform.InitDB(dbHost)
 
 	if err != nil {
 		panic(err)
