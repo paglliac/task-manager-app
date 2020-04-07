@@ -24,14 +24,14 @@ func (t Task) Close() error {
 	return taskStorage.closeTask(t.Id)
 }
 
-type TaskEvent struct {
+type Event struct {
 	taskId     string
 	eventType  string
 	occurredOn time.Time
 	payload    string
 }
 
-type TaskState struct {
+type State struct {
 	TaskId         string `json:"task_id"`
 	TaskTitle      string `json:"task_title"`
 	UnreadComments int    `json:"unread_comments"`
@@ -41,8 +41,8 @@ type TaskStorage interface {
 	loadTasks(limit int) []Task
 	loadTask(taskId string) Task
 	saveTask(task Task) (sql.Result, error)
-	loadStates(userId int) map[string]*TaskState
-	loadEvents(userId int) []TaskEvent
+	loadStates(userId int) map[string]*State
+	loadEvents(userId int) []Event
 	// TODO hack for not refactoring task_comment db interactions need fix asap
 	getDb() *platform.Storage
 	updateDescription(taskId string, description string) error
@@ -62,7 +62,7 @@ const (
 	taskStatusOpen = "open"
 )
 
-func LoadTaskStateList(userId int) map[string]*TaskState {
+func LoadTaskStateList(userId int) map[string]*State {
 	events := taskStorage.loadEvents(userId)
 	states := taskStorage.loadStates(userId)
 

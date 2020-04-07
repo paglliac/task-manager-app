@@ -43,9 +43,9 @@ func (s *SqlTaskStorage) updateDescription(taskId string, description string) er
 	return nil
 }
 
-func (s *SqlTaskStorage) loadStates(userId int) map[string]*TaskState {
+func (s *SqlTaskStorage) loadStates(userId int) map[string]*State {
 	rows, err := s.db.Query("SELECT id, title FROM tasks where status = 'open'")
-	states := make(map[string]*TaskState)
+	states := make(map[string]*State)
 
 	// This need to avoid unused parameter, but user id not used at the moment
 	log.Println(userId)
@@ -56,7 +56,7 @@ func (s *SqlTaskStorage) loadStates(userId int) map[string]*TaskState {
 	}
 
 	for rows.Next() {
-		var s TaskState
+		var s State
 		err = rows.Scan(&s.TaskId, &s.TaskTitle)
 
 		if err != nil {
@@ -73,8 +73,8 @@ func (s *SqlTaskStorage) getDb() *platform.Storage {
 	return &s.db
 }
 
-func (s *SqlTaskStorage) loadEvents(userId int) []TaskEvent {
-	events := make([]TaskEvent, 0)
+func (s *SqlTaskStorage) loadEvents(userId int) []Event {
+	events := make([]Event, 0)
 	rows, err := s.db.Query(`SELECT te.task_id, te.event_type, te.payload, te.occurred_on 
 										FROM tasks_events te
 										LEFT JOIN task_last_watched_event tlwe ON te.task_id = tlwe.task_id AND tlwe.user_id = $1
@@ -87,7 +87,7 @@ func (s *SqlTaskStorage) loadEvents(userId int) []TaskEvent {
 
 	for rows.Next() {
 		var payload sql.NullString
-		var e TaskEvent
+		var e Event
 
 		err = rows.Scan(&e.taskId, &e.eventType, &payload, &e.occurredOn)
 		e.payload = payload.String
