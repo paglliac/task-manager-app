@@ -4,13 +4,16 @@ import (
 	_ "github.com/go-sql-driver/mysql"
 	"net/http"
 	"net/http/httptest"
+	"os"
 	"tasks17-server/internal/platform"
 	"tasks17-server/internal/tasks"
 	"testing"
 )
 
 func TestCreateTaskEndpoint(t *testing.T) {
-	db, err := platform.InitDB()
+	dbHost := os.Getenv("DB_HOST")
+
+	db, err := platform.InitDB(dbHost)
 
 	if err != nil {
 		panic(err)

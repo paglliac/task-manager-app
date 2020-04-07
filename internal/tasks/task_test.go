@@ -2,13 +2,15 @@ package tasks
 
 import (
 	_ "github.com/go-sql-driver/mysql"
+	"os"
 	"tasks17-server/internal/platform"
 	"testing"
 	"time"
 )
 
 func TestCreateTask(t *testing.T) {
-	platform.InitDB()
+	dbHost := os.Getenv("DB_HOST")
+	platform.InitDB(dbHost)
 	_, err := CreateTask(Task{
 		Title:       "New Task",
 		Description: "Description",
