@@ -2,7 +2,6 @@ package tasks
 
 import (
 	"database/sql"
-	"encoding/json"
 	"errors"
 	"fmt"
 	"github.com/google/uuid"
@@ -166,12 +165,7 @@ func (s *SqlTaskStorage) saveTask(task Task) (sql.Result, error) {
 		log.Println(err)
 	}
 
-	event := WsEvent{
-		Type:  "task_added",
-		Event: task,
-	}
-	wsEventJson, _ := json.Marshal(event)
-	hub.Broadcast <- wsEventJson
+	hub.Broadcast <- platform.WsEvent{Type: "task_added", Event: task}
 
 	return r, nil
 }

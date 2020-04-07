@@ -16,6 +16,10 @@ type Task struct {
 	AuthorId    int
 }
 
+const (
+	taskStatusOpen = "open"
+)
+
 func (t Task) UpdateDescription(description string) error {
 	return taskStorage.updateDescription(t.Id, description)
 }
@@ -57,10 +61,6 @@ func InitTasksModule(db platform.Storage, h *platform.Hub) {
 	taskStorage = &SqlTaskStorage{db: db}
 	hub = h
 }
-
-const (
-	taskStatusOpen = "open"
-)
 
 func LoadTaskStateList(userId int) map[string]*State {
 	events := taskStorage.loadEvents(userId)

@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"github.com/google/uuid"
 	"log"
+	"tasks17-server/internal/platform"
 	"time"
 )
 
@@ -15,11 +16,6 @@ type TaskComment struct {
 	Author     int       `json:"author"`
 	AuthorName string    `json:"author_name"`
 	CreatedAt  time.Time `json:"created_at"`
-}
-
-type WsEvent struct {
-	Type  string      `json:"type"`
-	Event interface{} `json:"event"`
 }
 
 func LeaveComment(comment TaskComment) (sql.Result, error) {
@@ -47,12 +43,7 @@ func LeaveComment(comment TaskComment) (sql.Result, error) {
 		log.Printf("Error while inserting task event %v", err)
 	}
 
-	event := WsEvent{
-		Type:  "comment_added",
-		Event: comment,
-	}
-	wsEventJson, _ := json.Marshal(event)
-	hub.Broadcast <- wsEventJson
+	hub.Broadcast <- platform.WsEvent{Type: "comment_added", Event: comment}
 
 	return r, nil
 }

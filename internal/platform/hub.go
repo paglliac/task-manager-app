@@ -1,10 +1,30 @@
 package platform
 
+import (
+	"encoding/json"
+	"log"
+)
+
 type Hub struct {
 	clients    map[*Client]bool
-	Broadcast  chan []byte
+	Broadcast  chan WsEvent
 	register   chan *Client
 	unregister chan *Client
+}
+
+type WsEvent struct {
+	Type  string      `json:"type"`
+	Event interface{} `json:"event"`
+}
+
+func (we *WsEvent) toByte() []byte {
+	bytes, err := json.Marshal(we)
+
+	if err != nil {
+		log.Printf("[web socket event to byte] error while encode ws event to bytes: %v", err)
+	}
+
+	return bytes
 }
 
 var hub *Hub
@@ -12,7 +32,7 @@ var hub *Hub
 func InitHub() *Hub {
 	hub = &Hub{
 		clients:    make(map[*Client]bool),
-		Broadcast:  make(chan []byte),
+		Broadcast:  make(chan WsEvent),
 		register:   make(chan *Client),
 		unregister: make(chan *Client),
 	}

@@ -35,7 +35,7 @@ var upgrader = websocket.Upgrader{
 type Client struct {
 	hub  *Hub
 	conn *websocket.Conn
-	send chan []byte
+	send chan WsEvent
 }
 
 func (c *Client) readPump() {
@@ -83,13 +83,15 @@ func (c *Client) writePump() {
 			if err != nil {
 				return
 			}
-			w.Write(message)
+			w.Write(message.toByte())
 
 			n := len(c.send)
 
 			for i := 0; i < n; i++ {
 				w.Write(newline)
-				w.Write(<-c.send)
+				event := <-c.send
+
+				w.Write(event.toByte())
 			}
 
 			if err := w.Close(); err != nil {
@@ -119,7 +121,7 @@ func ServeWs(w http.ResponseWriter, r *http.Request) {
 
 	}
 
-	client := &Client{hub: h, conn: conn, send: make(chan []byte, 256)}
+	client := &Client{hub: h, conn: conn, send: make(chan WsEvent, 256)}
 	client.hub.register <- client
 
 	go client.readPump()
