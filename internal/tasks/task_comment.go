@@ -43,6 +43,8 @@ func LeaveComment(comment TaskComment) (sql.Result, error) {
 		log.Printf("Error while inserting task event %v", err)
 	}
 
+	UpdateLastWatchedComment(comment.Author, comment.TaskId, comment.Id)
+
 	hub.Broadcast <- platform.WsEvent{Type: "comment_added", Event: comment}
 
 	return r, nil
