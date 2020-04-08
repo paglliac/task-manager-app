@@ -48,6 +48,16 @@ func TaskCreateHandler(w http.ResponseWriter, r *http.Request) {
 	fmt.Fprintf(w, "{\"id\": %d}", lastInsertId)
 }
 
+func SubTaskCloseHandler(w http.ResponseWriter, r *http.Request) {
+	taskId := mux.Vars(r)["task"]
+	subTaskIdString := mux.Vars(r)["subTask"]
+	stId, _ := strconv.Atoi(subTaskIdString)
+
+	task := tasks.Task{Id: taskId}
+
+	task.CompleteSubTask(stId)
+}
+
 func SubTaskCreateHandler(w http.ResponseWriter, r *http.Request) {
 	decoder := json.NewDecoder(r.Body)
 	var st tasks.SubTask
@@ -75,8 +85,12 @@ func TaskCommentCreateHandler(w http.ResponseWriter, r *http.Request) {
 
 	var comment tasks.TaskComment
 	decoder.Decode(&comment)
+
+	taskId := mux.Vars(r)["task"]
 	authorId, err := strconv.Atoi(r.Header.Get("Authorization"))
+
 	comment.Author = authorId
+	comment.TaskId = taskId
 
 	sqlResult, err := tasks.LeaveComment(comment)
 

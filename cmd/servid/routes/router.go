@@ -47,10 +47,12 @@ func CreateRouter() http.Handler {
 	r.HandleFunc("/tasks/add", handlers.TaskCreateHandler).Methods("POST", "OPTIONS")
 	r.HandleFunc("/tasks/update-last-event", handlers.TaskUpdateLastCommentHandler).Methods("POST", "OPTIONS")
 	r.HandleFunc("/tasks/{task}", handlers.TaskLoadHandler).Methods("GET", "OPTIONS")
-	r.HandleFunc("/tasks/{task}/add-sub-task", handlers.SubTaskCreateHandler).Methods("POST", "OPTIONS")
 	r.HandleFunc("/tasks/{task}/close", handlers.TaskClose).Methods("POST", "OPTIONS")
 	r.HandleFunc("/tasks/{task}/update-description", handlers.TaskUpdateDescription).Methods("POST", "OPTIONS")
-	r.HandleFunc("/tasks/comments/add", handlers.TaskCommentCreateHandler).Methods("POST", "OPTIONS")
+	r.HandleFunc("/tasks/{task}/comments/add", handlers.TaskCommentCreateHandler).Methods("POST", "OPTIONS")
+	r.HandleFunc("/tasks/{task}/add-sub-task", handlers.SubTaskCreateHandler).Methods("POST", "OPTIONS")
+
+	r.HandleFunc("/tasks/{task}/{subTask}/close", handlers.SubTaskCloseHandler).Methods("POST", "OPTIONS")
 
 	// WebSocket Server
 	r.HandleFunc("/ws", func(w http.ResponseWriter, r *http.Request) {

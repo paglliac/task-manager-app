@@ -28,6 +28,11 @@ func (t Task) Close() error {
 	return taskStorage.closeTask(t.Id)
 }
 
+func (t Task) CompleteSubTask(subTask int) {
+	_, _ = taskStorage.getDb().Exec("UPDATE sub_tasks SET status = $1 WHERE id = $2", 1, subTask)
+
+}
+
 type Event struct {
 	taskId     string
 	eventType  string
