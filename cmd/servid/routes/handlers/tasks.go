@@ -53,8 +53,11 @@ func SubTaskCreateHandler(w http.ResponseWriter, r *http.Request) {
 	var st tasks.SubTask
 	decoder.Decode(&st)
 
+	taskId := mux.Vars(r)["task"]
 	authorId, _ := strconv.Atoi(r.Header.Get("Authorization"))
+
 	st.AuthorId = authorId
+	st.TaskId = taskId
 
 	sqlResult, err := tasks.AddSubTask(st)
 
