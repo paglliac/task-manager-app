@@ -44,6 +44,7 @@ func CreateRouter() http.Handler {
 	r.HandleFunc("/tasks", handlers.TaskListHandler).Methods("GET", "OPTIONS")
 	r.HandleFunc("/tasks/state", handlers.TaskStateListHandler).Methods("GET", "OPTIONS")
 	r.HandleFunc("/tasks/add", handlers.TaskCreateHandler).Methods("POST", "OPTIONS")
+	r.HandleFunc("/tasks/add-sub-task", handlers.SubTaskCreateHandler).Methods("POST", "OPTIONS")
 	r.HandleFunc("/tasks/update-last-event", handlers.TaskUpdateLastCommentHandler).Methods("POST", "OPTIONS")
 	r.HandleFunc("/tasks/{task}", handlers.TaskLoadHandler).Methods("GET", "OPTIONS")
 	r.HandleFunc("/tasks/{task}/close", handlers.TaskClose).Methods("POST", "OPTIONS")

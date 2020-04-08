@@ -169,3 +169,23 @@ func (s *SqlTaskStorage) saveTask(task Task) (sql.Result, error) {
 
 	return r, nil
 }
+
+func (s *SqlTaskStorage) saveSubTask(st SubTask) (sql.Result, error) {
+	r, err := s.db.Exec(`INSERT into sub_tasks (task, stage, author, status, name, created_at) values ($1, $2, $3, $4, $5, $6)`, st.TaskId, st.StageId, st.AuthorId, 0, st.Name, time.Now())
+
+	if err != nil {
+		log.Printf("[addSubTask] error while adding sub-tasks: %v", err)
+		return nil, err
+	}
+
+	// TODO add handle events by pipe not right here
+	_, err = s.db.Exec(`INSERT into tasks_events (task_id, event_type, occurred_on) values ($1, $2, $3)`, st.TaskId, "sub_task_added", time.Now())
+
+	if err != nil {
+		log.Println(err)
+	}
+
+	hub.Broadcast <- platform.WsEvent{Type: "sub_task_added", Event: st}
+
+	return r, nil
+}

@@ -30,10 +30,6 @@ func TaskStateListHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 func TaskCreateHandler(w http.ResponseWriter, r *http.Request) {
-	if r.Method == "OPTIONS" {
-		return
-	}
-
 	decoder := json.NewDecoder(r.Body)
 	var t tasks.Task
 	decoder.Decode(&t)
@@ -42,6 +38,25 @@ func TaskCreateHandler(w http.ResponseWriter, r *http.Request) {
 	t.AuthorId = authorId
 
 	sqlResult, err := tasks.CreateTask(t)
+
+	if err != nil {
+		http.Error(w, "Something went wrong", 500)
+		return
+	}
+
+	lastInsertId, _ := sqlResult.LastInsertId()
+	fmt.Fprintf(w, "{\"id\": %d}", lastInsertId)
+}
+
+func SubTaskCreateHandler(w http.ResponseWriter, r *http.Request) {
+	decoder := json.NewDecoder(r.Body)
+	var st tasks.SubTask
+	decoder.Decode(&st)
+
+	authorId, _ := strconv.Atoi(r.Header.Get("Authorization"))
+	st.AuthorId = authorId
+
+	sqlResult, err := tasks.AddSubTask(st)
 
 	if err != nil {
 		http.Error(w, "Something went wrong", 500)
@@ -75,6 +90,7 @@ func TaskLoadHandler(w http.ResponseWriter, r *http.Request) {
 	type response struct {
 		Task     tasks.Task          `json:"task"`
 		Comments []tasks.TaskComment `json:"comments"`
+		SubTasks []tasks.SubTask     `json:"sub_tasks"`
 	}
 
 	var rs response
@@ -84,6 +100,7 @@ func TaskLoadHandler(w http.ResponseWriter, r *http.Request) {
 	taskId := vars["task"]
 	rs.Comments = tasks.LoadComments(taskId)
 	rs.Task = tasks.LoadTask(taskId)
+	rs.SubTasks = tasks.LoadSubTasks(taskId)
 
 	jsonResponse(rs, w)
 }

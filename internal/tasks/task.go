@@ -43,13 +43,14 @@ type State struct {
 
 type TaskStorage interface {
 	loadTasks(limit int) []Task
-	loadTask(taskId string) Task
-	saveTask(task Task) (sql.Result, error)
-	loadStates(userId int) map[string]*State
-	loadEvents(userId int) []Event
+	loadTask(id string) Task
+	saveTask(t Task) (sql.Result, error)
+	saveSubTask(st SubTask) (sql.Result, error)
+	loadStates(uid int) map[string]*State
+	loadEvents(uid int) []Event
 	// TODO hack for not refactoring task_comment db interactions need fix asap
 	getDb() *platform.Storage
-	updateDescription(taskId string, description string) error
+	updateDescription(id string, description string) error
 	closeTask(id string) error
 }
 
@@ -89,4 +90,9 @@ func LoadTasks(limit int) []Task {
 
 func CreateTask(task Task) (sql.Result, error) {
 	return taskStorage.saveTask(task)
+}
+
+func AddSubTask(subTask SubTask) (sql.Result, error) {
+	subTask.CreatedAt = time.Now()
+	return taskStorage.saveSubTask(subTask)
 }
