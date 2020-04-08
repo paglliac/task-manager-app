@@ -80,7 +80,6 @@ func LoadComments(taskId string) []TaskComment {
 
 func UpdateLastWatchedComment(userId int, taskId string, commentId string) {
 	id := findLastEventByCommentId(commentId)
-	log.Println(id)
 	_, err := taskStorage.getDb().Exec(`INSERT into task_last_watched_event (user_id, task_id, last_event_id) values ($1, $2, $3) ON CONFLICT (user_id, task_id) DO UPDATE SET last_event_id = $3`, userId, taskId, id)
 
 	if err != nil {

@@ -11,7 +11,7 @@ type SubTask struct {
 	TaskId    string    `json:"task_id"`
 	StageId   int       `json:"stage_id"`
 	AuthorId  int       `json:"author_id"`
-	Status    string    `json:"status"`
+	Status    int       `json:"status"`
 	Name      string    `json:"name"`
 	ClosedAt  time.Time `json:"closed_at"`
 	CreatedAt time.Time `json:"created_at"`
@@ -21,6 +21,80 @@ type Stage struct {
 	Id   int
 	Name string
 	Rank int
+}
+
+type Progress struct {
+	SubTasks []SubTask `json:"sub_tasks"`
+	Stages   []Stage   `json:"stages"`
+}
+
+func LoadProgress(taskId string) Progress {
+	stList := LoadSubTasks(taskId)
+	stageList := loadTaskStages(taskId)
+
+	return Progress{
+		SubTasks: stList,
+		Stages:   stageList,
+	}
+}
+
+func LoadStages() []Stage {
+	list := make([]Stage, 0)
+
+	rows, err := taskStorage.getDb().Query("SELECT sts.id, sts.name, sts.rank FROM sub_task_stages as sts")
+	defer rows.Close()
+
+	if err != nil {
+		log.Panic(err)
+	}
+
+	for rows.Next() {
+		var s Stage
+
+		err = rows.Scan(&s.Id, &s.Name, &s.Rank)
+
+		if err != nil {
+			log.Println("Error while scanning Stage entity", err)
+		} else {
+			list = append(list, s)
+		}
+	}
+
+	if err = rows.Err(); err != nil {
+		log.Panic(err)
+	}
+
+	return list
+}
+
+func loadTaskStages(taskId string) []Stage {
+	list := make([]Stage, 0)
+
+	rows, err := taskStorage.getDb().Query("SELECT DISTINCT sts.id, sts.name, sts.rank FROM sub_tasks LEFT JOIN sub_task_stages sts on sub_tasks.stage = sts.id WHERE task = $1", taskId)
+	defer rows.Close()
+
+	if err != nil {
+		log.Panic(err)
+	}
+
+	for rows.Next() {
+		var s Stage
+
+		err = rows.Scan(&s.Id, &s.Name, &s.Rank)
+
+		if err != nil {
+			log.Println("Error while scanning Stage entity", err)
+		} else {
+			list = append(list, s)
+		}
+	}
+
+	if err = rows.Err(); err != nil {
+		log.Panic(err)
+	}
+
+	return list
+
 }
 
 func LoadSubTasks(taskId string) []SubTask {

@@ -47,7 +47,6 @@ func (s *SqlTaskStorage) loadStates(userId int) map[string]*State {
 	states := make(map[string]*State)
 
 	// This need to avoid unused parameter, but user id not used at the moment
-	log.Println(userId)
 	defer rows.Close()
 
 	if err != nil {

@@ -86,11 +86,17 @@ func TaskCommentCreateHandler(w http.ResponseWriter, r *http.Request) {
 	fmt.Fprintf(w, "{\"id\": %d}", lastInsertId)
 }
 
+func StagesLoadHandler(w http.ResponseWriter, _ *http.Request) {
+	sList := tasks.LoadStages()
+
+	jsonResponse(sList, w)
+}
+
 func TaskLoadHandler(w http.ResponseWriter, r *http.Request) {
 	type response struct {
 		Task     tasks.Task          `json:"task"`
 		Comments []tasks.TaskComment `json:"comments"`
-		SubTasks []tasks.SubTask     `json:"sub_tasks"`
+		Progress tasks.Progress      `json:"progress"`
 	}
 
 	var rs response
@@ -100,7 +106,7 @@ func TaskLoadHandler(w http.ResponseWriter, r *http.Request) {
 	taskId := vars["task"]
 	rs.Comments = tasks.LoadComments(taskId)
 	rs.Task = tasks.LoadTask(taskId)
-	rs.SubTasks = tasks.LoadSubTasks(taskId)
+	rs.Progress = tasks.LoadProgress(taskId)
 
 	jsonResponse(rs, w)
 }
