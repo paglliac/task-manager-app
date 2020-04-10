@@ -31,6 +31,7 @@ func (t Task) Close() error {
 func (t Task) CompleteSubTask(subTask int) {
 	_, _ = taskStorage.getDb().Exec("UPDATE sub_tasks SET status = $1 WHERE id = $2", 1, subTask)
 
+	hub.Broadcast <- platform.WsEvent{Type: "sub_task_completed", Event: subTask}
 }
 
 type Event struct {
