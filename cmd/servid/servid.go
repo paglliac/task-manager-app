@@ -13,6 +13,8 @@ import (
 )
 
 func main() {
+	log.SetFlags(log.Ldate | log.Ltime | log.Llongfile)
+
 	dbHost := os.Getenv("DB_HOST")
 
 	db, err := platform.InitDB(dbHost)
