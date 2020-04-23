@@ -21,6 +21,9 @@ load dump from file to mysql
 
 `migrate -database ${POSTGRESQL_URL} -path database/migrations up `
 
-`go run cmd/servi/servi.go createUser -username=kir -email=kir@gangsterelephant.io -password=kir`
+`go run cmd/servi/servi.go setup`
+This command will create organisation, team, and 2 users with credentials:
+kir@gangsterelephant.io:kir
+serg@gangsterelephant.io:serg
 
 `./servid`

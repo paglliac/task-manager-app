@@ -6,11 +6,7 @@ import (
 	"log"
 )
 
-type Storage struct {
-	*sql.DB
-}
-
-func InitDB(dbHost string) (Storage, error) {
+func InitDb(dbHost string) (*sql.DB, error) {
 	db, err := sql.Open("postgres", fmt.Sprintf("postgres://postgres:tasks17@%s/tasks17?sslmode=disable", dbHost))
 
 	if err != nil {
@@ -23,5 +19,5 @@ func InitDB(dbHost string) (Storage, error) {
 
 	log.Println("Connection with database established")
 
-	return Storage{db}, err
+	return db, err
 }

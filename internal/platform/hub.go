@@ -7,9 +7,13 @@ import (
 
 type Hub struct {
 	clients    map[*Client]bool
-	Broadcast  chan WsEvent
+	broadcast  chan WsEvent
 	register   chan *Client
 	unregister chan *Client
+}
+
+func (h *Hub) Handle(e WsEvent) {
+	h.broadcast <- e
 }
 
 type WsEvent struct {
@@ -32,7 +36,7 @@ var hub *Hub
 func InitHub() *Hub {
 	hub = &Hub{
 		clients:    make(map[*Client]bool),
-		Broadcast:  make(chan WsEvent),
+		broadcast:  make(chan WsEvent),
 		register:   make(chan *Client),
 		unregister: make(chan *Client),
 	}
@@ -51,7 +55,7 @@ func (h *Hub) run() {
 				close(client.send)
 				delete(h.clients, client)
 			}
-		case message := <-h.Broadcast:
+		case message := <-h.broadcast:
 			for client := range h.clients {
 				select {
 				case client.send <- message:
