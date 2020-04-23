@@ -16,3 +16,11 @@ func jsonResponse(entity interface{}, w io.Writer) {
 		log.Println("Can't write response in response writer", err)
 	}
 }
+
+func jsonCollectionResponse(key string, entity interface{}, w io.Writer) {
+	collectionMap := map[string]interface{}{
+		key: entity,
+	}
+
+	jsonResponse(collectionMap, w)
+}

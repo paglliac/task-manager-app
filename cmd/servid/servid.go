@@ -15,20 +15,17 @@ import (
 func main() {
 	log.SetFlags(log.Ldate | log.Ltime | log.Llongfile)
 
-	dbHost := os.Getenv("DB_HOST")
-
-	db, err := platform.InitDB(dbHost)
-
+	db, err := platform.InitDb(os.Getenv("DB_HOST"))
 	if err != nil {
 		panic(err)
 	}
 
 	hub := platform.InitHub()
 
-	r := routes.CreateRouter()
+	tasks.Init(hub)
+	auth.Init(db)
 
-	tasks.InitTasksModule(db, hub)
-	auth.InitAuthModule(db)
+	r := routes.CreateRouter(hub, db)
 
 	log.Println("Server have been started listening on port 8080")
 

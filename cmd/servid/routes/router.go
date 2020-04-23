@@ -1,58 +1,62 @@
 package routes
 
 import (
+	"database/sql"
 	"github.com/gorilla/mux"
 	"log"
 	"net/http"
 	"net/url"
 	"tasks17-server/cmd/servid/routes/handlers"
+	"tasks17-server/internal/auth"
 	"tasks17-server/internal/platform"
+	"tasks17-server/internal/storage"
 )
 
-func LogMiddleware(next http.Handler) http.Handler {
+func handle404() http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		log.Println(r.RequestURI)
+		spaUrl, _ := url.Parse(r.Header.Get("Referer"))
 
-		next.ServeHTTP(w, r)
-	})
-}
-
-func CorsMiddleware(next http.Handler) http.Handler {
-	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		url, _ := url.Parse(r.Header.Get("Referer"))
-		w.Header().Set("Access-Control-Allow-Origin", "http://"+url.Host)
+		w.Header().Set("Access-Control-Allow-Origin", "http://"+spaUrl.Host)
 		w.Header().Set("Access-Control-Allow-Methods", "GET,HEAD,OPTIONS,POST,PUT")
 		w.Header().Set("Access-Control-Allow-Headers", "Access-Control-Allow-Headers, Origin,Accept, X-Requested-With, Content-Type, Access-Control-Request-Method, Access-Control-Request-Headers, Authorization")
 
-		if r.Method == "OPTIONS" {
-			return
+		if r.Method != "OPTIONS" {
+			log.Println("[404] Try to perform url: ", r.URL)
+			http.Error(w, http.StatusText(http.StatusNotFound), http.StatusNotFound)
 		}
-
-		next.ServeHTTP(w, r)
 	})
 }
 
-func CreateRouter() http.Handler {
+func CreateRouter(h *platform.Hub, db *sql.DB) http.Handler {
+	s := storage.New(db)
+	authenticator := auth.NewAuthenticator(db)
 	r := mux.NewRouter()
 
-	r.Use(LogMiddleware)
-	r.Use(CorsMiddleware)
+	r.Use(logMiddleware)
+	r.Use(corsMiddleware)
+	r.Use(authorizeMiddleware(&s))
 
-	r.HandleFunc("/sign-in", handlers.SignInHandler).Methods("POST", "OPTIONS")
+	r.NotFoundHandler = handle404()
+
+	r.HandleFunc("/sign-in", handlers.SignInHandler(authenticator)).Methods("POST", "OPTIONS")
+
+	r.HandleFunc("/teams", handlers.TeamListHandler(&s)).Methods("GET", "OPTIONS")
 
 	// Tasks package routes
-	r.HandleFunc("/tasks", handlers.TaskListHandler).Methods("GET", "OPTIONS")
-	r.HandleFunc("/tasks/state", handlers.TaskStateListHandler).Methods("GET", "OPTIONS")
-	r.HandleFunc("/tasks/stages", handlers.StagesLoadHandler).Methods("GET", "OPTIONS")
-	r.HandleFunc("/tasks/add", handlers.TaskCreateHandler).Methods("POST", "OPTIONS")
-	r.HandleFunc("/tasks/update-last-event", handlers.TaskUpdateLastCommentHandler).Methods("POST", "OPTIONS")
-	r.HandleFunc("/tasks/{task}", handlers.TaskLoadHandler).Methods("GET", "OPTIONS")
-	r.HandleFunc("/tasks/{task}/close", handlers.TaskClose).Methods("POST", "OPTIONS")
-	r.HandleFunc("/tasks/{task}/update-description", handlers.TaskUpdateDescription).Methods("POST", "OPTIONS")
-	r.HandleFunc("/tasks/{task}/comments/add", handlers.TaskCommentCreateHandler).Methods("POST", "OPTIONS")
-	r.HandleFunc("/tasks/{task}/add-sub-task", handlers.SubTaskCreateHandler).Methods("POST", "OPTIONS")
+	r.HandleFunc("/team/{team}/tasks", handlers.TaskListHandler(&s)).Methods("GET", "OPTIONS")
+	r.HandleFunc("/team/{team}/tasks/state", handlers.TaskStateListHandler(&s)).Methods("GET", "OPTIONS")
+	r.HandleFunc("/team/{team}/tasks/add", handlers.TaskCreateHandler(&s)).Methods("POST", "OPTIONS")
 
-	r.HandleFunc("/tasks/{task}/{subTask}/close", handlers.SubTaskCloseHandler).Methods("POST", "OPTIONS")
+	r.HandleFunc("/team/{team}/tasks/{task}", handlers.TaskLoadHandler(&s)).Methods("GET", "OPTIONS")
+	r.HandleFunc("/team/{team}/tasks/{task}/close", handlers.TaskClose(&s)).Methods("POST", "OPTIONS")
+	r.HandleFunc("/team/{team}/tasks/{task}/update-description", handlers.TaskUpdateDescription(&s)).Methods("POST", "OPTIONS")
+
+	r.HandleFunc("/team/{team}/tasks/{task}/comments/add", handlers.TaskCommentCreateHandler(h, &s)).Methods("POST", "OPTIONS")
+	r.HandleFunc("/team/{team}/tasks/{task}/update-last-event", handlers.TaskUpdateLastCommentHandler(&s)).Methods("POST", "OPTIONS")
+
+	r.HandleFunc("/team/{team}/stages", handlers.StagesLoadHandler(&s)).Methods("GET", "OPTIONS")
+	r.HandleFunc("/team/{team}/tasks/{task}/add-sub-task", handlers.SubTaskCreateHandler(h, &s)).Methods("POST", "OPTIONS")
+	r.HandleFunc("/team/{team}/tasks/{task}/{subTask}/close", handlers.SubTaskCloseHandler(&s)).Methods("POST", "OPTIONS")
 
 	// WebSocket Server
 	r.HandleFunc("/ws", func(w http.ResponseWriter, r *http.Request) {
