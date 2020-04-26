@@ -17,7 +17,7 @@ func LoadTaskStateList(ts TaskStorage, userId int, teamId int) map[string]*State
 			if _, ok := states[event.TaskId]; ok {
 				states[event.TaskId].UnreadComments++
 			} else {
-				log.Println("ERR event for not exists task")
+				log.Printf("ERR event for not exists task. Event task id: %s", event.TaskId)
 			}
 		}
 	}

@@ -27,6 +27,21 @@ func handle404() http.Handler {
 	})
 }
 
+func handleMethodNotAllowed() http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		spaUrl, _ := url.Parse(r.Header.Get("Referer"))
+
+		w.Header().Set("Access-Control-Allow-Origin", "http://"+spaUrl.Host)
+		w.Header().Set("Access-Control-Allow-Methods", "GET,HEAD,OPTIONS,POST,PUT")
+		w.Header().Set("Access-Control-Allow-Headers", "Access-Control-Allow-Headers, Origin,Accept, X-Requested-With, Content-Type, Access-Control-Request-Method, Access-Control-Request-Headers, Authorization")
+
+		if r.Method != "OPTIONS" {
+			log.Println("[404] Try to perform url: ", r.URL)
+			http.Error(w, http.StatusText(http.StatusMethodNotAllowed), http.StatusMethodNotAllowed)
+		}
+	})
+}
+
 func CreateRouter(h *platform.Hub, db *sql.DB) http.Handler {
 	s := storage.New(db)
 	authenticator := auth.NewAuthenticator(db)
@@ -37,6 +52,7 @@ func CreateRouter(h *platform.Hub, db *sql.DB) http.Handler {
 	r.Use(authorizeMiddleware(&s))
 
 	r.NotFoundHandler = handle404()
+	r.MethodNotAllowedHandler = handleMethodNotAllowed()
 
 	r.HandleFunc("/sign-in", handlers.SignInHandler(authenticator)).Methods("POST", "OPTIONS")
 

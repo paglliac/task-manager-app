@@ -16,6 +16,7 @@ type TaskComment struct {
 
 func LeaveComment(h *platform.Hub, ts TaskStorage, comment TaskComment) (id string, err error) {
 	id, err = ts.SaveComment(comment)
+	comment.Id = id
 
 	if err != nil {
 		return "", err

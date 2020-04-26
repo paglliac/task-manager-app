@@ -262,7 +262,7 @@ func (s *Storage) LoadEvents(userId int, teamId int) []tasks.Event {
 										FROM tasks_events te
 											LEFT JOIN tasks ON te.task_id = tasks.id
 											LEFT JOIN task_last_watched_event tlwe ON te.task_id = tlwe.task_id AND tlwe.user_id = $1
-									WHERE team_id = $2 AND (te.id > tlwe.last_event_id or tlwe.last_event_id IS NULL)`, userId, teamId)
+									WHERE team_id = $2 AND (te.id > tlwe.last_event_id or tlwe.last_event_id IS NULL) and status = 'open'`, userId, teamId)
 	defer rows.Close()
 
 	if err != nil {
