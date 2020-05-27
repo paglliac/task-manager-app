@@ -18,6 +18,7 @@ func (h *hub) Handle(event platform.WsEvent) {
 
 var s storage.Storage
 var h hub
+var hh *platform.Hub
 
 var setup = dbSetup{}
 
@@ -38,6 +39,16 @@ func (u users) main() *user {
 	return nil
 }
 
+func (u users) secondary() *user {
+	for i, user := range u {
+		if i == 1 {
+			return &user
+		}
+	}
+
+	return nil
+}
+
 type user struct {
 	id       int
 	email    string
@@ -53,6 +64,7 @@ func TestMain(m *testing.M) {
 
 	h = hub{}
 	tasks.Init(&h)
+	hh = platform.InitHub()
 
 	tearDown := setUpDatabase()
 	defer tearDown()
