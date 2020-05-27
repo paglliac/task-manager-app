@@ -1,13 +1,5 @@
 package tasks
 
-type TeamModule struct {
-	Storage TaskStorage
-}
-
-func (t TeamModule) LoadTeams(orgId int) []Team {
-	return t.Storage.LoadTeams(orgId)
-}
-
 type Team struct {
 	Id    int    `json:"id"`
 	OrgId int    `json:"org_id"`

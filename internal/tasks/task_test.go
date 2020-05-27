@@ -12,8 +12,8 @@ func TestCreateTask(t *testing.T) {
 		Title:       "New Task",
 		Description: "Description",
 		Status:      "open",
-		AuthorId:    1,
-		TeamId:      1,
+		AuthorId:    setup.users.main().id,
+		TeamId:      setup.users.main().teamId,
 	}
 	id, _ := tasks.CreateTask(&s, expectedTask)
 	defer s.RemoveTask(id)
