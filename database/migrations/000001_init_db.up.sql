@@ -43,21 +43,21 @@ CREATE TABLE IF NOT EXISTS tasks_events
     occurred_on TIMESTAMP    NOT NULL
 );
 
-CREATE TABLE IF NOT EXISTS task_last_watched_event
+CREATE TABLE IF NOT EXISTS task_comments
+(
+    id         SERIAL PRIMARY KEY,
+    task_id    CHAR(36)  NOT NULL REFERENCES tasks (id) ON DELETE CASCADE,
+    author_id  INT       REFERENCES users (id) ON DELETE SET NULL,
+    message    TEXT      NOT NULL,
+    created_at TIMESTAMP NOT NULL
+);
+
+CREATE TABLE IF NOT EXISTS task_last_watched_comment
 (
     user_id       INT      NOT NULL REFERENCES users (id) ON DELETE CASCADE,
     task_id       CHAR(36) NOT NULL REFERENCES tasks (id) ON DELETE CASCADE,
-    last_event_id INT      NOT NULL REFERENCES tasks_events (id),
+    last_comment_id INT      NOT NULL REFERENCES task_comments(id),
     UNIQUE (user_id, task_id)
-);
-
-CREATE TABLE IF NOT EXISTS task_comments
-(
-    id         CHAR(36) PRIMARY KEY,
-    task_id    CHAR(36)  NOT NULL REFERENCES tasks (id) ON DELETE CASCADE,
-    author_id  INT       NOT NULL REFERENCES users (id),
-    message    TEXT      NOT NULL,
-    created_at TIMESTAMP NOT NULL
 );
 
 CREATE TABLE IF NOT EXISTS sub_task_stages

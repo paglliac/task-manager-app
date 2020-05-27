@@ -4,6 +4,7 @@ import (
 	"fmt"
 	_ "github.com/lib/pq"
 	"io/ioutil"
+	"strconv"
 	"tasks17-server/cmd/servid/routes/handlers"
 	"tasks17-server/internal/auth"
 	"tasks17-server/internal/tasks"
@@ -177,9 +178,9 @@ func TestUpdateLastWatchedComment(t *testing.T) {
 		Author:  setup.user.id,
 	})
 
-	commentId := response.get("id")
+	commentId, _ := strconv.Atoi(response.get("id"))
 
-	NewRequester(t).auth(&setup.user).post(fmt.Sprintf("/team/%d/tasks/%s/update-last-event", setup.teamId, task.Id), map[string]string{
+	NewRequester(t).auth(&setup.user).post(fmt.Sprintf("/team/%d/tasks/%s/update-last-event", setup.teamId, task.Id), map[string]int{
 		"comment_id": commentId,
 	})
 	// TODO add logic for unread comments

@@ -1,7 +1,5 @@
 package tasks
 
-import "log"
-
 type State struct {
 	TaskId         string `json:"task_id"`
 	TaskTitle      string `json:"task_title"`
@@ -9,17 +7,11 @@ type State struct {
 }
 
 func LoadTaskStateList(ts TaskStorage, userId int, teamId int) map[string]*State {
-	events := ts.LoadEvents(userId, teamId)
+	unreadCommentsAmount := ts.LoadUnreadCommentsAmount(userId, teamId)
 	states := ts.LoadStates(teamId)
 
-	for _, event := range events {
-		if event.EventType == "task_comment_left" {
-			if _, ok := states[event.TaskId]; ok {
-				states[event.TaskId].UnreadComments++
-			} else {
-				log.Printf("ERR event for not exists task. Event task id: %s", event.TaskId)
-			}
-		}
+	for taskId, unreadComments := range unreadCommentsAmount {
+		states[taskId].UnreadComments = unreadComments
 	}
 
 	return states

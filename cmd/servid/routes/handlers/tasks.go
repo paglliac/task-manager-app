@@ -156,7 +156,7 @@ func TaskLoadHandler(ts tasks.TaskStorage) func(w http.ResponseWriter, r *http.R
 func TaskUpdateLastCommentHandler(ts tasks.TaskStorage) func(w http.ResponseWriter, r *http.Request) {
 	return func(w http.ResponseWriter, r *http.Request) {
 		type updateLastComment struct {
-			CommentId string `json:"comment_id"`
+			CommentId int `json:"comment_id"`
 		}
 
 		taskId := mux.Vars(r)["task"]

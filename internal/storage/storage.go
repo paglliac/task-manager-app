@@ -7,7 +7,6 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"github.com/google/uuid"
 	"log"
 	"tasks17-server/internal/tasks"
 	"time"
@@ -35,24 +34,15 @@ func (s *Storage) SaveCommentEvent(comment tasks.TaskComment) {
 
 }
 
-func (s *Storage) SaveComment(comment tasks.TaskComment) (id string, err error) {
-	generatedId, err := uuid.NewRandom()
-
-	if err != nil {
-		return "", err
-	}
-
-	comment.CreatedAt = time.Now()
-	comment.Id = generatedId.String()
-
-	_, err = s.Exec("INSERT INTO task_comments (id, author_id, message, created_at, task_id) values ($1,$2,$3,$4,$5)", comment.Id, comment.Author, comment.Message, comment.CreatedAt, comment.TaskId)
+func (s *Storage) SaveComment(comment tasks.TaskComment) (id int, err error) {
+	err = s.QueryRow("INSERT INTO task_comments (author_id, message, created_at, task_id) values ($1,$2,$3,$4) RETURNING id", comment.Author, comment.Message, time.Now(), comment.TaskId).Scan(&id)
 
 	if err != nil {
 		log.Printf("Error while inserting task comment %v", err)
-		return "", err
+		return 0, err
 	}
 
-	return comment.Id, nil
+	return id, nil
 }
 
 func (s *Storage) LoadComments(taskId string) []tasks.TaskComment {
@@ -83,32 +73,8 @@ func (s *Storage) LoadComments(taskId string) []tasks.TaskComment {
 	return taskCommentsList
 }
 
-func (s *Storage) FindLastEventByCommentId(id string) int {
-	rows, err := s.Query("SELECT id FROM tasks_events WHERE event_type = 'task_comment_left' AND payload LIKE $1 LIMIT 1", "%"+id+"%")
-	defer rows.Close()
-
-	if err != nil {
-		log.Panic(err)
-	}
-
-	for rows.Next() {
-		var eventId int
-		err = rows.Scan(&eventId)
-
-		if err != nil {
-			log.Println("Error while scanning entity", err)
-		}
-		return eventId
-	}
-
-	return 0
-
-}
-
-func (s *Storage) UpdateLastWatchedComment(userId int, taskId string, commentId string) {
-	// TODO return error if it occurrenced
-	id := s.FindLastEventByCommentId(commentId)
-	_, err := s.Exec(`INSERT into task_last_watched_event (user_id, task_id, last_event_id) values ($1, $2, $3) ON CONFLICT (user_id, task_id) DO UPDATE SET last_event_id = $3`, userId, taskId, id)
+func (s *Storage) UpdateLastWatchedComment(userId int, taskId string, commentId int) {
+	_, err := s.Exec(`INSERT into task_last_watched_comment (user_id, task_id, last_comment_id) values ($1, $2, $3) ON CONFLICT (user_id, task_id) DO UPDATE SET last_comment_id = $3`, userId, taskId, commentId)
 
 	if err != nil {
 		log.Printf("Error while inserting task event %v", err)
@@ -256,34 +222,36 @@ func (s *Storage) LoadStates(teamId int) map[string]*tasks.State {
 	return states
 }
 
-func (s *Storage) LoadEvents(userId int, teamId int) []tasks.Event {
-	events := make([]tasks.Event, 0)
-	rows, err := s.Query(`SELECT te.task_id, te.event_type, te.payload, te.occurred_on 
-										FROM tasks_events te
-											LEFT JOIN tasks ON te.task_id = tasks.id
-											LEFT JOIN task_last_watched_event tlwe ON te.task_id = tlwe.task_id AND tlwe.user_id = $1
-									WHERE team_id = $2 AND (te.id > tlwe.last_event_id or tlwe.last_event_id IS NULL) and status = 'open'`, userId, teamId)
+func (s *Storage) LoadUnreadCommentsAmount(userId int, teamId int) map[string]int {
+	rows, err := s.Query(`SELECT tc.task_id, count(*) as unread_comments_amount
+from tasks
+         RIGHT JOIN task_comments tc on tasks.id = tc.task_id
+         left join task_last_watched_comment tlwe on tasks.id = tlwe.task_id and tlwe.user_id = $1
+where tasks.team_id = $2
+  and (tc.id > tlwe.last_comment_id or tlwe.last_comment_id is null)
+group by tc.task_id`, userId, teamId)
 	defer rows.Close()
 
 	if err != nil {
 		log.Panic(err)
 	}
 
-	for rows.Next() {
-		var payload sql.NullString
-		var e tasks.Event
+	result := map[string]int{}
 
-		err = rows.Scan(&e.TaskId, &e.EventType, &payload, &e.OccurredOn)
-		e.Payload = payload.String
+	for rows.Next() {
+		var taskId string
+		var unreadComments int
+
+		err = rows.Scan(&taskId, &unreadComments)
 
 		if err != nil {
 			log.Println("Error while scanning entity", err)
 		} else {
-			events = append(events, e)
+			result[taskId] = unreadComments
 		}
 	}
 
-	return events
+	return result
 }
 
 func (s *Storage) LoadTask(taskId string) tasks.Task {

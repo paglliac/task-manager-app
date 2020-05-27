@@ -6,7 +6,7 @@ import (
 )
 
 type TaskComment struct {
-	Id         string    `json:"id"`
+	Id         int       `json:"id"`
 	TaskId     string    `json:"task_id"`
 	Message    string    `json:"message"`
 	Author     int       `json:"author"`
@@ -14,12 +14,12 @@ type TaskComment struct {
 	CreatedAt  time.Time `json:"created_at"`
 }
 
-func LeaveComment(h *platform.Hub, ts TaskStorage, comment TaskComment) (id string, err error) {
+func LeaveComment(h *platform.Hub, ts TaskStorage, comment TaskComment) (id int, err error) {
 	id, err = ts.SaveComment(comment)
 	comment.Id = id
 
 	if err != nil {
-		return "", err
+		return 0, err
 	}
 
 	ts.SaveCommentEvent(comment)
