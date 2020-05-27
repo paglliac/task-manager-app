@@ -12,6 +12,18 @@ import (
 	"tasks17-server/internal/tasks"
 )
 
+func AddTeamHandler(ts tasks.TaskStorage) func(w http.ResponseWriter, r *http.Request) {
+	return func(w http.ResponseWriter, r *http.Request) {
+		credentials, _ := auth.FromRequest(r)
+		id, _ := ts.SaveTeam(tasks.Team{
+			OrgId: credentials.Oid,
+			Name:  mux.Vars(r)["name"],
+		})
+
+		jsonResponse(map[string]int{"id": id}, w)
+	}
+}
+
 func TeamListHandler(ts tasks.TaskStorage) func(w http.ResponseWriter, r *http.Request) {
 	return func(w http.ResponseWriter, r *http.Request) {
 		credentials, _ := auth.FromRequest(r)

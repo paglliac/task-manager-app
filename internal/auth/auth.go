@@ -13,8 +13,10 @@ func Init(db *sql.DB) {
 }
 
 type Credentials struct {
+
 	// User Id
 	Uid int `json:"id"`
+
 	// Organisation Id
 	Oid int `json:"org_id"`
 

@@ -11,6 +11,7 @@ type TaskStorage interface {
 	UpdateDescription(id string, description string) error
 
 	LoadTeams(orgId int) Teams
+	SaveTeam(team Team) (id int, err error)
 	LoadTeam(id int) Team
 
 	LoadStages(teamId int) []Stage

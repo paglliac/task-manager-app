@@ -57,6 +57,7 @@ func CreateRouter(h *platform.Hub, db *sql.DB) http.Handler {
 	r.HandleFunc("/sign-in", handlers.SignInHandler(authenticator)).Methods("POST", "OPTIONS")
 
 	r.HandleFunc("/teams", handlers.TeamListHandler(&s)).Methods("GET", "OPTIONS")
+	r.HandleFunc("/teams/add", handlers.AddTeamHandler(&s)).Methods("POST", "OPTIONS")
 
 	// Tasks package routes
 	r.HandleFunc("/team/{team}/tasks", handlers.TaskListHandler(&s)).Methods("GET", "OPTIONS")

@@ -113,8 +113,8 @@ func (r *jsonResponse) getRaw(key string) interface{} {
 func (r *jsonResponse) get(key string) string {
 	r.parse()
 
-	v := r.parsedResponse[key]
-	return v.(string)
+	v := r.parsedResponse[key].(string)
+	return v
 }
 
 type Requester struct {

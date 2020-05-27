@@ -59,6 +59,21 @@ func TestTasksStateListEndpoint(t *testing.T) {
 	}
 }
 
+func TestAddTeamEndpoint(t *testing.T) {
+	tr := map[string]string{
+		"name": "Team C",
+	}
+	response := NewRequester(t).auth(&setup.user).post("/teams/add", tr)
+
+	teamId := int(response.getRaw("id").(float64))
+
+	if teamId == 0 {
+		t.Error("Team haven't been created")
+	}
+
+	s.RemoveTeam(teamId)
+}
+
 func TestTeamsEndpoint(t *testing.T) {
 	response := NewRequester(t).auth(&setup.user).get("/teams")
 
@@ -82,7 +97,7 @@ func TestStagesEndpoint(t *testing.T) {
 }
 
 func TestTaskCreateEndpoint(t *testing.T) {
-	tr := map[string]interface{}{
+	tr := map[string]string{
 		"title":       "New task",
 		"description": "New task description",
 	}
