@@ -8,8 +8,9 @@ CREATE TABLE IF NOT EXISTS organisations
 CREATE TABLE IF NOT EXISTS teams
 (
     id              SERIAL PRIMARY KEY,
-    organisation_id INT not null REFERENCES organisations (id) ON DELETE CASCADE,
-    name            VARCHAR(255)
+    organisation_id INT          not null REFERENCES organisations (id) ON DELETE CASCADE,
+    name            VARCHAR(255) not null,
+    UNIQUE (organisation_id, name)
 );
 
 CREATE TABLE IF NOT EXISTS users
@@ -54,9 +55,9 @@ CREATE TABLE IF NOT EXISTS task_comments
 
 CREATE TABLE IF NOT EXISTS task_last_watched_comment
 (
-    user_id       INT      NOT NULL REFERENCES users (id) ON DELETE CASCADE,
-    task_id       CHAR(36) NOT NULL REFERENCES tasks (id) ON DELETE CASCADE,
-    last_comment_id INT      NOT NULL REFERENCES task_comments(id),
+    user_id         INT      NOT NULL REFERENCES users (id) ON DELETE CASCADE,
+    task_id         CHAR(36) NOT NULL REFERENCES tasks (id) ON DELETE CASCADE,
+    last_comment_id INT      NOT NULL REFERENCES task_comments (id),
     UNIQUE (user_id, task_id)
 );
 

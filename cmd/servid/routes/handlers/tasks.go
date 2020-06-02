@@ -14,13 +14,31 @@ import (
 
 func AddTeamHandler(ts tasks.TaskStorage) func(w http.ResponseWriter, r *http.Request) {
 	return func(w http.ResponseWriter, r *http.Request) {
+		type createTeam struct {
+			Name string
+		}
+
+		var ct createTeam
+
 		credentials, _ := auth.FromRequest(r)
+		decoder := json.NewDecoder(r.Body)
+		_ = decoder.Decode(&ct)
+
 		id, _ := ts.SaveTeam(tasks.Team{
 			OrgId: credentials.Oid,
-			Name:  mux.Vars(r)["name"],
+			Name:  ct.Name,
 		})
 
 		jsonResponse(map[string]int{"id": id}, w)
+	}
+}
+
+func TeamInfoHandler(ts tasks.TaskStorage) func(w http.ResponseWriter, r *http.Request) {
+	return func(w http.ResponseWriter, r *http.Request) {
+		teamId, _ := strconv.Atoi(mux.Vars(r)["team"])
+		team := ts.LoadTeam(teamId)
+
+		jsonResponse(team, w)
 	}
 }
 

@@ -60,6 +60,7 @@ func CreateRouter(h *platform.Hub, db *sql.DB) http.Handler {
 	r.HandleFunc("/teams/add", handlers.AddTeamHandler(&s)).Methods("POST", "OPTIONS")
 
 	// Tasks package routes
+	r.HandleFunc("/team/{team}", handlers.TeamInfoHandler(&s)).Methods("GET", "OPTIONS")
 	r.HandleFunc("/team/{team}/tasks", handlers.TaskListHandler(&s)).Methods("GET", "OPTIONS")
 	r.HandleFunc("/team/{team}/tasks/state", handlers.TaskStateListHandler(&s)).Methods("GET", "OPTIONS")
 	r.HandleFunc("/team/{team}/tasks/add", handlers.TaskCreateHandler(&s)).Methods("POST", "OPTIONS")
