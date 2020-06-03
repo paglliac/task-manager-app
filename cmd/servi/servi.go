@@ -80,6 +80,12 @@ func setup(db storage.Storage) {
 
 	log.Printf("Team created successfully with id: %d", teamId)
 
+	err = db.QueryRow(`INSERT into sub_task_stages (team_id,rank, name) values ($1, 1, 'Development') RETURNING id`, teamId).Scan(&uId)
+	log.Printf("SubTaskStage Development created successfully with id: %d", uId)
+
+	err = db.QueryRow(`INSERT into sub_task_stages (team_id,rank, name) values ($1, 2, 'QA') RETURNING id`, teamId).Scan(&uId)
+	log.Printf("SubTaskStage QA created successfully with id: %d", uId)
+
 	err = db.QueryRow(`INSERT into users (organisation_id, name, email, password) values ($1, 'kir', 'kir@gangsterelephant.io', 'kir') RETURNING id`, orgId).Scan(&uId)
 	log.Printf("User created successfully with id: %d", uId)
 

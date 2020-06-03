@@ -74,11 +74,14 @@ CREATE TABLE IF NOT EXISTS sub_tasks
     id         SERIAL PRIMARY KEY,
     task_id    CHAR(36)     NOT NULL REFERENCES tasks (id) ON DELETE CASCADE,
     stage_id   INT          NOT NULL REFERENCES sub_task_stages (id),
+    rank       INT          NOT NULL,
     author_id  INT          NOT NULL REFERENCES users (id),
     status     INT          NOT NULL,
     name       VARCHAR(255) NOT NULL,
     created_at TIMESTAMP    NOT NULL,
-    closed_at  TIMESTAMP
+    closed_at  TIMESTAMP,
+
+    UNIQUE (task_id, stage_id, rank)
 );
 
 

@@ -9,6 +9,7 @@ type SubTask struct {
 	Id        int       `json:"id"`
 	TaskId    string    `json:"task_id"`
 	StageId   int       `json:"stage_id"`
+	Rank      int       `json:"rank"`
 	AuthorId  int       `json:"author_id"`
 	Status    int       `json:"status"`
 	Name      string    `json:"name"`

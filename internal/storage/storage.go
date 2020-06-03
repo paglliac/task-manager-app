@@ -84,7 +84,7 @@ func (s *Storage) UpdateLastWatchedComment(userId int, taskId string, commentId 
 func (s *Storage) LoadSubTasks(taskId string) []tasks.SubTask {
 	subTasksList := make([]tasks.SubTask, 0)
 
-	rows, err := s.Query("SELECT id, task_id, stage_id, author_id, status, name, created_at, closed_at FROM sub_tasks WHERE task_id = $1", taskId)
+	rows, err := s.Query("SELECT id, task_id, stage_id, author_id, status, name, created_at, closed_at FROM sub_tasks WHERE task_id = $1 order by rank", taskId)
 	defer rows.Close()
 
 	if err != nil {
@@ -317,7 +317,7 @@ func (s *Storage) SaveTask(task *tasks.Task) (err error) {
 }
 
 func (s *Storage) SaveSubTask(st tasks.SubTask) (id int, err error) {
-	err = s.QueryRow(`INSERT into sub_tasks (task_id, stage_id, author_id, status, name, created_at) values ($1, $2, $3, $4, $5, $6) RETURNING id`, st.TaskId, st.StageId, st.AuthorId, 0, st.Name, time.Now()).Scan(&id)
+	err = s.QueryRow(`INSERT into sub_tasks (task_id, stage_id, author_id, rank, status, name, created_at) values ($1, $2, $3, (SELECT count(rank) + 1 FROM sub_tasks WHERE task_id = $1), $4, $5, $6) RETURNING id`, st.TaskId, st.StageId, st.AuthorId, 0, st.Name, time.Now()).Scan(&id)
 
 	if err != nil {
 		log.Printf("[addSubTask] error while adding sub-tasks: %v", err)
