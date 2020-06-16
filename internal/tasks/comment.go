@@ -11,7 +11,7 @@ type Discussion struct {
 
 type Comment struct {
 	Id           int       `json:"id"`
-	DiscussionId string    `json:"-"`
+	DiscussionId string    `json:"discussion_id"`
 	Message      string    `json:"message"`
 	Author       int       `json:"author"`
 	AuthorName   string    `json:"author_name"`
