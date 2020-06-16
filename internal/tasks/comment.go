@@ -5,16 +5,20 @@ import (
 	"time"
 )
 
-type TaskComment struct {
-	Id         int       `json:"id"`
-	TaskId     string    `json:"task_id"`
-	Message    string    `json:"message"`
-	Author     int       `json:"author"`
-	AuthorName string    `json:"author_name"`
-	CreatedAt  time.Time `json:"created_at"`
+type Discussion struct {
+	id int
 }
 
-func LeaveComment(h *platform.Hub, ts TaskStorage, comment TaskComment) (id int, err error) {
+type Comment struct {
+	Id           int       `json:"id"`
+	DiscussionId string    `json:"-"`
+	Message      string    `json:"message"`
+	Author       int       `json:"author"`
+	AuthorName   string    `json:"author_name"`
+	CreatedAt    time.Time `json:"created_at"`
+}
+
+func LeaveComment(h *platform.Hub, ts TaskStorage, comment Comment) (id int, err error) {
 	id, err = ts.SaveComment(comment)
 	comment.Id = id
 
@@ -22,8 +26,7 @@ func LeaveComment(h *platform.Hub, ts TaskStorage, comment TaskComment) (id int,
 		return 0, err
 	}
 
-	ts.SaveCommentEvent(comment)
-	ts.UpdateLastWatchedComment(comment.Author, comment.TaskId, comment.Id)
+	ts.UpdateLastWatchedComment(comment.Author, comment.DiscussionId, comment.Id)
 
 	h.Handle(platform.WsEvent{Type: "comment_added", Event: comment})
 

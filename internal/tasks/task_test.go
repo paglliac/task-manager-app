@@ -15,7 +15,7 @@ func TestCreateTask(t *testing.T) {
 		AuthorId:    setup.users.main().id,
 		TeamId:      setup.users.main().teamId,
 	}
-	id, _ := tasks.CreateTask(&s, expectedTask)
+	id, _ := tasks.CreateTask(&s, &expectedTask)
 	defer s.RemoveTask(id)
 
 	// Check task has been created
@@ -58,13 +58,13 @@ func TestReadComment(t *testing.T) {
 		AuthorId:    setup.users.main().id,
 		TeamId:      setup.users.main().teamId,
 	}
-	id, _ := tasks.CreateTask(&s, expectedTask)
+	id, _ := tasks.CreateTask(&s, &expectedTask)
 	defer s.RemoveTask(id)
 
-	commentId, _ := tasks.LeaveComment(hh, &s, tasks.TaskComment{
-		TaskId:  id,
-		Message: "New comment",
-		Author:  setup.users.main().id,
+	commentId, _ := tasks.LeaveComment(hh, &s, tasks.Comment{
+		DiscussionId: expectedTask.DiscussionId,
+		Message:      "New comment",
+		Author:       setup.users.main().id,
 	})
 
 	states := tasks.LoadTaskStateList(&s, setup.users.secondary().id, setup.users.secondary().teamId)

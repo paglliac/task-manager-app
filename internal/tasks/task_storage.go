@@ -6,8 +6,8 @@ type TaskStorage interface {
 	LoadTask(id string) Task
 	SaveTask(t *Task) error
 	CloseTask(id string) error
-	LoadStates(teamId int) map[string]*State
-	LoadUnreadCommentsAmount(uid int, teamId int) map[string]int
+	LoadStates(teamId int) States
+	LoadUnreadCommentsAmount(uid int, discussionsIds []string) map[string]int
 	UpdateDescription(id string, description string) error
 
 	LoadTeams(orgId int) Teams
@@ -20,8 +20,8 @@ type TaskStorage interface {
 	CompleteSubTask(subTaskId int)
 	SaveSubTask(st SubTask) (int, error)
 
-	SaveComment(comment TaskComment) (id int, err error)
-	SaveCommentEvent(comment TaskComment)
+	SaveComment(comment Comment) (id int, err error)
 	UpdateLastWatchedComment(userId int, taskId string, commentId int)
-	LoadComments(taskId string) []TaskComment
+	LoadComments(discussionId string) []Comment
+	CreateDiscussion(id string)
 }

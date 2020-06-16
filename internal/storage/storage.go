@@ -7,6 +7,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"github.com/lib/pq"
 	"log"
 	"tasks17-server/internal/tasks"
 	"time"
@@ -14,6 +15,14 @@ import (
 
 type Storage struct {
 	*sql.DB
+}
+
+func (s *Storage) CreateDiscussion(id string) {
+	_, err := s.Exec(`INSERT into discussions (id) values ($1)`, id)
+
+	if err != nil {
+		log.Printf("Error while inserting task event %v", err)
+	}
 }
 
 func New(db *sql.DB) Storage {
@@ -24,9 +33,9 @@ func (s *Storage) CompleteSubTask(subTask int) {
 	_, _ = s.Exec("UPDATE sub_tasks SET status = $1, closed_at = $2 WHERE id = $3", 1, time.Now(), subTask)
 }
 
-func (s *Storage) SaveCommentEvent(comment tasks.TaskComment) {
+func (s *Storage) SaveCommentEvent(comment tasks.Comment) {
 	commentJson, err := json.Marshal(comment)
-	_, err = s.Exec(`INSERT into tasks_events (task_id, event_type, payload, occurred_on) values ($1, $2, $3, $4)`, comment.TaskId, "task_comment_left", commentJson, time.Now())
+	_, err = s.Exec(`INSERT into tasks_events (task_id, event_type, payload, occurred_on) values ($1, $2, $3, $4)`, comment.DiscussionId, "task_comment_left", commentJson, time.Now())
 
 	if err != nil {
 		log.Printf("Error while inserting task event %v", err)
@@ -34,8 +43,8 @@ func (s *Storage) SaveCommentEvent(comment tasks.TaskComment) {
 
 }
 
-func (s *Storage) SaveComment(comment tasks.TaskComment) (id int, err error) {
-	err = s.QueryRow("INSERT INTO task_comments (author_id, message, created_at, task_id) values ($1,$2,$3,$4) RETURNING id", comment.Author, comment.Message, time.Now(), comment.TaskId).Scan(&id)
+func (s *Storage) SaveComment(comment tasks.Comment) (id int, err error) {
+	err = s.QueryRow("INSERT INTO comments (author_id, message, created_at,discussion_id) values ($1,$2,$3,$4) RETURNING id", comment.Author, comment.Message, time.Now(), comment.DiscussionId).Scan(&id)
 
 	if err != nil {
 		log.Printf("Error while inserting task comment %v", err)
@@ -45,10 +54,10 @@ func (s *Storage) SaveComment(comment tasks.TaskComment) (id int, err error) {
 	return id, nil
 }
 
-func (s *Storage) LoadComments(taskId string) []tasks.TaskComment {
-	taskCommentsList := make([]tasks.TaskComment, 0)
+func (s *Storage) LoadComments(discussionId string) []tasks.Comment {
+	taskCommentsList := make([]tasks.Comment, 0)
 
-	rows, err := s.Query("SELECT task_comments.id, task_id, message, author_id, users.name, created_at FROM task_comments LEFT JOIN users ON users.id = task_comments.author_id WHERE task_id= $1 ORDER BY created_at", taskId)
+	rows, err := s.Query("SELECT comments.id, discussion_id, message, author_id, users.name, created_at FROM comments LEFT JOIN users ON users.id = comments.author_id WHERE discussion_id= $1 ORDER BY created_at", discussionId)
 	defer rows.Close()
 
 	if err != nil {
@@ -56,8 +65,8 @@ func (s *Storage) LoadComments(taskId string) []tasks.TaskComment {
 	}
 
 	for rows.Next() {
-		var taskComment tasks.TaskComment
-		err = rows.Scan(&taskComment.Id, &taskComment.TaskId, &taskComment.Message, &taskComment.Author, &taskComment.AuthorName, &taskComment.CreatedAt)
+		var taskComment tasks.Comment
+		err = rows.Scan(&taskComment.Id, &taskComment.DiscussionId, &taskComment.Message, &taskComment.Author, &taskComment.AuthorName, &taskComment.CreatedAt)
 
 		if err != nil {
 			log.Println("Error while scanning entity", err)
@@ -73,8 +82,8 @@ func (s *Storage) LoadComments(taskId string) []tasks.TaskComment {
 	return taskCommentsList
 }
 
-func (s *Storage) UpdateLastWatchedComment(userId int, taskId string, commentId int) {
-	_, err := s.Exec(`INSERT into task_last_watched_comment (user_id, task_id, last_comment_id) values ($1, $2, $3) ON CONFLICT (user_id, task_id) DO UPDATE SET last_comment_id = $3`, userId, taskId, commentId)
+func (s *Storage) UpdateLastWatchedComment(userId int, discussionId string, commentId int) {
+	_, err := s.Exec(`INSERT into discussion_watched_comment (user_id, discussion_id, last_comment_id) values ($1, $2, $3) ON CONFLICT (user_id, discussion_id) DO UPDATE SET last_comment_id = $3`, userId, discussionId, commentId)
 
 	if err != nil {
 		log.Printf("Error while inserting task event %v", err)
@@ -198,8 +207,8 @@ func (s *Storage) UpdateDescription(taskId string, description string) error {
 	return nil
 }
 
-func (s *Storage) LoadStates(teamId int) map[string]*tasks.State {
-	rows, err := s.Query("SELECT id, title FROM tasks where status = 'open' and team_id = $1", teamId)
+func (s *Storage) LoadStates(teamId int) tasks.States {
+	rows, err := s.Query("SELECT id, title, discussion_id FROM tasks where status = 'open' and team_id = $1", teamId)
 	states := make(map[string]*tasks.State)
 
 	defer rows.Close()
@@ -210,7 +219,7 @@ func (s *Storage) LoadStates(teamId int) map[string]*tasks.State {
 
 	for rows.Next() {
 		var s tasks.State
-		err = rows.Scan(&s.TaskId, &s.TaskTitle)
+		err = rows.Scan(&s.TaskId, &s.TaskTitle, &s.DiscussionId)
 
 		if err != nil {
 			log.Println("Error while scanning entity", err)
@@ -222,14 +231,14 @@ func (s *Storage) LoadStates(teamId int) map[string]*tasks.State {
 	return states
 }
 
-func (s *Storage) LoadUnreadCommentsAmount(userId int, teamId int) map[string]int {
-	rows, err := s.Query(`SELECT tc.task_id, count(*) as unread_comments_amount
-from tasks
-         RIGHT JOIN task_comments tc on tasks.id = tc.task_id
-         left join task_last_watched_comment tlwe on tasks.id = tlwe.task_id and tlwe.user_id = $1
-where tasks.team_id = $2
-  and (tc.id > tlwe.last_comment_id or tlwe.last_comment_id is null)
-group by tc.task_id`, userId, teamId)
+func (s *Storage) LoadUnreadCommentsAmount(uid int, discussionsIds []string) map[string]int {
+	rows, err := s.Query(`SELECT dwc.discussion_id, count(*)
+FROM comments
+         LEFT JOIN discussion_watched_comment dwc on comments.discussion_id = dwc.discussion_id
+where comments.discussion_id = ANY ($1::char(36)[])
+  and dwc.user_id = $2
+  and comments.id > dwc.last_comment_id
+GROUP BY dwc.discussion_id`, pq.Array(discussionsIds), uid)
 	defer rows.Close()
 
 	if err != nil {
@@ -255,11 +264,11 @@ group by tc.task_id`, userId, teamId)
 }
 
 func (s *Storage) LoadTask(taskId string) tasks.Task {
-	row := s.QueryRow("SELECT id, title, description, status, created_at, author_id, team_id, updated_at FROM tasks WHERE id = $1", taskId)
+	row := s.QueryRow("SELECT id, title, description, status, created_at, author_id, team_id, discussion_id, updated_at FROM tasks WHERE id = $1", taskId)
 
 	var task tasks.Task
 
-	err := row.Scan(&task.Id, &task.Title, &task.Description, &task.Status, &task.CreatedAt, &task.AuthorId, &task.TeamId, &task.UpdatedAt)
+	err := row.Scan(&task.Id, &task.Title, &task.Description, &task.Status, &task.CreatedAt, &task.AuthorId, &task.TeamId, &task.DiscussionId, &task.UpdatedAt)
 
 	if err != nil {
 		log.Println("Error while scanning entity", err)
@@ -299,7 +308,7 @@ func (s *Storage) LoadTasks(teamId int) []tasks.Task {
 func (s *Storage) SaveTask(task *tasks.Task) (err error) {
 	task.PreSave()
 
-	_, err = s.Exec(`INSERT into tasks (id, team_id, title, description, status, created_at, updated_at, author_id) values ($1, $2, $3, $4, $5, $6, $7, $8)`, task.Id, task.TeamId, task.Title, task.Description, "open", task.CreatedAt, task.UpdatedAt, task.AuthorId)
+	_, err = s.Exec(`INSERT into tasks (id, team_id, discussion_id, title, description, status, created_at, updated_at, author_id) values ($1, $2, $3, $4, $5, $6, $7, $8, $9)`, task.Id, task.TeamId, task.DiscussionId, task.Title, task.Description, "open", task.CreatedAt, task.UpdatedAt, task.AuthorId)
 
 	if err != nil {
 		log.Printf("[SaveTask] error while saving tasks: %v", err)

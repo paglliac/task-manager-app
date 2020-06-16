@@ -91,5 +91,4 @@ func setup(db storage.Storage) {
 
 	err = db.QueryRow(`INSERT into users (organisation_id, name, email, password) values ($1, 'serg', 'serg@gangsterelephant.io', 'serg') RETURNING id`, orgId).Scan(&uId)
 	log.Printf("User created successfully with id: %d", uId)
-
 }

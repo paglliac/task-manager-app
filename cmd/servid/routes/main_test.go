@@ -230,7 +230,7 @@ func (u user) createTask() (tasks.Task, context.CancelFunc) {
 		AuthorId:    u.id,
 	}
 
-	err := s.SaveTask(&task)
+	_, err := tasks.CreateTask(&s, &task)
 
 	if err != nil {
 		panic(err)

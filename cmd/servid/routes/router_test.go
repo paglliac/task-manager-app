@@ -164,10 +164,10 @@ func TestAddCommentEndpoint(t *testing.T) {
 	task, rollback := setup.user.createTask()
 	defer rollback()
 
-	response := NewRequester(t).auth(&setup.user).post(fmt.Sprintf("/team/%d/tasks/%s/comments/add", setup.teamId, task.Id), tasks.TaskComment{
-		TaskId:  task.Id,
-		Message: "New comment",
-		Author:  setup.user.id,
+	response := NewRequester(t).auth(&setup.user).post(fmt.Sprintf("/team/%d/tasks/%s/comments/add", setup.teamId, task.Id), tasks.Comment{
+		DiscussionId: task.DiscussionId,
+		Message:      "New comment",
+		Author:       setup.user.id,
 	})
 
 	commentId := response.get("id")
@@ -176,7 +176,7 @@ func TestAddCommentEndpoint(t *testing.T) {
 		t.Error("Comment id not returned")
 	}
 
-	comments := s.LoadComments(task.Id)
+	comments := s.LoadComments(task.DiscussionId)
 
 	if len(comments) == 0 {
 		t.Error("Comment not created")
@@ -187,10 +187,10 @@ func TestUpdateLastWatchedComment(t *testing.T) {
 	task, rollback := setup.user.createTask()
 	defer rollback()
 
-	response := NewRequester(t).auth(&setup.user).post(fmt.Sprintf("/team/%d/tasks/%s/comments/add", setup.teamId, task.Id), tasks.TaskComment{
-		TaskId:  task.Id,
-		Message: "New comment",
-		Author:  setup.user.id,
+	response := NewRequester(t).auth(&setup.user).post(fmt.Sprintf("/team/%d/tasks/%s/comments/add", setup.teamId, task.Id), tasks.Comment{
+		DiscussionId: task.DiscussionId,
+		Message:      "New comment",
+		Author:       setup.user.id,
 	})
 
 	commentId, _ := strconv.Atoi(response.get("id"))

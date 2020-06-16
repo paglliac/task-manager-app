@@ -23,16 +23,31 @@ CREATE TABLE IF NOT EXISTS users
     UNIQUE (email)
 );
 
+CREATE TABLE IF NOT EXISTS discussions
+(
+    id CHAR(36) PRIMARY KEY
+);
+
+CREATE TABLE IF NOT EXISTS comments
+(
+    id            SERIAL PRIMARY KEY,
+    discussion_id CHAR(36)  NOT NULL REFERENCES discussions (id) ON DELETE CASCADE,
+    author_id     INT       REFERENCES users (id) ON DELETE SET NULL,
+    message       TEXT      NOT NULL,
+    created_at    TIMESTAMP NOT NULL
+);
+
 CREATE TABLE IF NOT EXISTS tasks
 (
-    id          CHAR(36) PRIMARY KEY,
-    author_id   INT          NOT NULL REFERENCES users (id),
-    team_id     INT          NOT NULL REFERENCES teams (id) ON DELETE CASCADE,
-    title       VARCHAR(70)  NOT NULL,
-    description TEXT,
-    status      VARCHAR(255) NOT NULL,
-    created_at  TIMESTAMP    NOT NULL,
-    updated_at  TIMESTAMP    NOT NULL
+    id            CHAR(36) PRIMARY KEY,
+    author_id     INT          NOT NULL REFERENCES users (id),
+    team_id       INT          NOT NULL REFERENCES teams (id) ON DELETE CASCADE,
+    title         VARCHAR(70)  NOT NULL,
+    description   TEXT,
+    status        VARCHAR(255) NOT NULL,
+    discussion_id CHAR(36)     NOT NULL REFERENCES discussions (id),
+    created_at    TIMESTAMP    NOT NULL,
+    updated_at    TIMESTAMP    NOT NULL
 );
 
 CREATE TABLE IF NOT EXISTS tasks_events
@@ -44,21 +59,14 @@ CREATE TABLE IF NOT EXISTS tasks_events
     occurred_on TIMESTAMP    NOT NULL
 );
 
-CREATE TABLE IF NOT EXISTS task_comments
-(
-    id         SERIAL PRIMARY KEY,
-    task_id    CHAR(36)  NOT NULL REFERENCES tasks (id) ON DELETE CASCADE,
-    author_id  INT       REFERENCES users (id) ON DELETE SET NULL,
-    message    TEXT      NOT NULL,
-    created_at TIMESTAMP NOT NULL
-);
 
-CREATE TABLE IF NOT EXISTS task_last_watched_comment
+
+CREATE TABLE IF NOT EXISTS discussion_watched_comment
 (
     user_id         INT      NOT NULL REFERENCES users (id) ON DELETE CASCADE,
-    task_id         CHAR(36) NOT NULL REFERENCES tasks (id) ON DELETE CASCADE,
-    last_comment_id INT      NOT NULL REFERENCES task_comments (id),
-    UNIQUE (user_id, task_id)
+    discussion_id   CHAR(36) NOT NULL REFERENCES discussions (id) ON DELETE CASCADE,
+    last_comment_id INT      NOT NULL REFERENCES comments (id),
+    UNIQUE (user_id, discussion_id)
 );
 
 CREATE TABLE IF NOT EXISTS sub_task_stages

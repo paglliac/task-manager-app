@@ -13,14 +13,15 @@ func Init(h EventHandler) {
 }
 
 type Task struct {
-	Id          string    `json:"id"`
-	TeamId      int       `json:"team_id"`
-	Title       string    `json:"title"`
-	Description string    `json:"description"`
-	Status      string    `json:"status"`
-	CreatedAt   time.Time `json:"created_at"`
-	UpdatedAt   time.Time `json:"updated_at"`
-	AuthorId    int
+	Id           string    `json:"id"`
+	TeamId       int       `json:"team_id"`
+	Title        string    `json:"title"`
+	Description  string    `json:"description"`
+	Status       string    `json:"status"`
+	DiscussionId string    `json:"-"`
+	CreatedAt    time.Time `json:"created_at"`
+	UpdatedAt    time.Time `json:"updated_at"`
+	AuthorId     int
 }
 
 func (t *Task) PreSave() {
@@ -35,8 +36,11 @@ func (t *Task) PreSave() {
 	t.UpdatedAt = time.Now()
 }
 
-func CreateTask(ts TaskStorage, task Task) (string, error) {
-	err := ts.SaveTask(&task)
+func CreateTask(ts TaskStorage, task *Task) (string, error) {
+	discussionId := uuid.New().String()
+	ts.CreateDiscussion(discussionId)
+	task.DiscussionId = discussionId
+	err := ts.SaveTask(task)
 	hub.Handle(platform.WsEvent{Type: "task_added", Event: task.Id})
 	return task.Id, err
 }

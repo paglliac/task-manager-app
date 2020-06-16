@@ -79,7 +79,7 @@ func TaskCreateHandler(ts tasks.TaskStorage) func(w http.ResponseWriter, r *http
 		t.AuthorId = credentials.Uid
 		t.TeamId, _ = strconv.Atoi(mux.Vars(r)["team"])
 
-		id, err := tasks.CreateTask(ts, t)
+		id, err := tasks.CreateTask(ts, &t)
 
 		if err != nil {
 			log.Printf("Error while task creation: %v", err)
@@ -128,7 +128,7 @@ func TaskCommentCreateHandler(h *platform.Hub, ts tasks.TaskStorage) func(w http
 	return func(w http.ResponseWriter, r *http.Request) {
 		taskId := mux.Vars(r)["task"]
 		credentials, _ := auth.FromRequest(r)
-		var comment tasks.TaskComment
+		var comment tasks.Comment
 
 		decoder := json.NewDecoder(r.Body)
 		err := decoder.Decode(&comment)
@@ -137,8 +137,9 @@ func TaskCommentCreateHandler(h *platform.Hub, ts tasks.TaskStorage) func(w http
 			http.Error(w, "Bad body", http.StatusBadRequest)
 		}
 
+		task := ts.LoadTask(taskId)
 		comment.Author = credentials.Uid
-		comment.TaskId = taskId
+		comment.DiscussionId = task.DiscussionId
 
 		id, err := tasks.LeaveComment(h, ts, comment)
 
@@ -167,16 +168,16 @@ func StagesLoadHandler(ts tasks.TaskStorage) func(w http.ResponseWriter, r *http
 func TaskLoadHandler(ts tasks.TaskStorage) func(w http.ResponseWriter, r *http.Request) {
 	return func(w http.ResponseWriter, r *http.Request) {
 		type response struct {
-			Task     tasks.Task          `json:"task"`
-			Comments []tasks.TaskComment `json:"comments"`
-			Progress tasks.Progress      `json:"progress"`
+			Task     tasks.Task      `json:"task"`
+			Comments []tasks.Comment `json:"comments"`
+			Progress tasks.Progress  `json:"progress"`
 		}
 
 		var rs response
 
 		taskId := mux.Vars(r)["task"]
 		rs.Task = ts.LoadTask(taskId)
-		rs.Comments = ts.LoadComments(taskId)
+		rs.Comments = ts.LoadComments(rs.Task.DiscussionId)
 		rs.Progress = tasks.LoadProgress(ts, taskId)
 
 		jsonResponse(rs, w)
@@ -202,7 +203,8 @@ func TaskUpdateLastCommentHandler(ts tasks.TaskStorage) func(w http.ResponseWrit
 			return
 		}
 
-		ts.UpdateLastWatchedComment(credentials.Uid, taskId, t.CommentId)
+		task := ts.LoadTask(taskId)
+		ts.UpdateLastWatchedComment(credentials.Uid, task.DiscussionId, t.CommentId)
 	}
 }
 
