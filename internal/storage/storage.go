@@ -17,6 +17,46 @@ type Storage struct {
 	*sql.DB
 }
 
+func (s *Storage) LoadProjectStages(pid int) []tasks.ProjectStage {
+	list := make([]tasks.ProjectStage, 0)
+
+	rows, err := s.Query(`SELECT id, project_id, name, description, status FROM project_stages WHERE project_id = $1`, pid)
+
+	defer rows.Close()
+
+	if err != nil {
+		log.Panic(err)
+	}
+
+	for rows.Next() {
+		var ps tasks.ProjectStage
+		err = rows.Scan(&ps.Id, &ps.ProjectId, &ps.Name, &ps.Description, &ps.Status)
+
+		if err != nil {
+			log.Println("Error while scanning entity", err)
+		} else {
+			list = append(list, ps)
+		}
+	}
+
+	if err := rows.Err(); err != nil {
+		log.Panic(err)
+	}
+
+	return list
+}
+
+func (s *Storage) CreateProjectStage(stage tasks.ProjectStage) (id int) {
+	err := s.QueryRow(`INSERT into project_stages (project_id, name, description, status) values ($1, $2, $3, $4) RETURNING id`, stage.ProjectId, stage.Name, stage.Description, stage.Status).Scan(&id)
+
+	if err != nil {
+		log.Printf("Error while inserting project event %v", err)
+		return 0
+	}
+
+	return id
+}
+
 func (s *Storage) LoadProject(id int) tasks.Project {
 	row := s.QueryRow("SELECT id, org_id, name, description, status, discussion_id FROM projects WHERE id = $1", id)
 

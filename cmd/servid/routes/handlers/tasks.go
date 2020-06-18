@@ -14,16 +14,42 @@ import (
 	"time"
 )
 
+func ProjectAddStageHandler(ts tasks.TaskStorage) func(w http.ResponseWriter, r *http.Request) {
+	return func(w http.ResponseWriter, r *http.Request) {
+		type createProjectStage struct {
+			Name        string
+			Description string
+		}
+
+		var cps createProjectStage
+		decoder := json.NewDecoder(r.Body)
+		_ = decoder.Decode(&cps)
+
+		projectId, _ := strconv.Atoi(mux.Vars(r)["project"])
+
+		id := ts.CreateProjectStage(tasks.ProjectStage{
+			ProjectId:   projectId,
+			Name:        cps.Name,
+			Description: cps.Description,
+			Status:      0,
+		})
+
+		jsonResponse(map[string]int{"id": id}, w)
+	}
+}
+
 func ProjectInfoHandler(ts tasks.TaskStorage) func(w http.ResponseWriter, r *http.Request) {
 	return func(w http.ResponseWriter, r *http.Request) {
 		type response struct {
-			Project  tasks.Project   `json:"project"`
-			Comments []tasks.Comment `json:"comments"`
+			Project  tasks.Project        `json:"project"`
+			Comments []tasks.Comment      `json:"comments"`
+			Stages   []tasks.ProjectStage `json:"stages"`
 		}
 		var rs response
 		pid, _ := strconv.Atoi(mux.Vars(r)["project"])
 		rs.Project = ts.LoadProject(pid)
 		rs.Comments = ts.LoadComments(rs.Project.DiscussionId)
+		rs.Stages = ts.LoadProjectStages(pid)
 
 		jsonResponse(rs, w)
 	}

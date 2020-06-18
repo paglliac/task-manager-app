@@ -10,9 +10,9 @@ type Project struct {
 }
 
 type ProjectStage struct {
-	id          int
-	projectId   int
-	name        string
-	description string
-	status      int
+	Id          int    `json:"id"`
+	ProjectId   int    `json:"project_id"`
+	Name        string `json:"name"`
+	Description string `json:"description"`
+	Status      int    `json:"status"`
 }
