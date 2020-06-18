@@ -15,6 +15,7 @@ func Init(h EventHandler) {
 type Task struct {
 	Id           string    `json:"id"`
 	TeamId       int       `json:"team_id"`
+	ProjectId    int       `json:"project_id"`
 	Title        string    `json:"title"`
 	Description  string    `json:"description"`
 	Status       string    `json:"status"`

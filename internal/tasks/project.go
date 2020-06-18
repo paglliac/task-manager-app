@@ -1,10 +1,12 @@
 package tasks
 
 type Project struct {
-	id          int
-	orgId       int
-	name        string
-	description string
+	Id           int    `json:"id"`
+	OrgId        int    `json:"org_id"`
+	Name         string `json:"name"`
+	Description  string `json:"description"`
+	Status       int    `json:"status"`
+	DiscussionId string `json:"discussion_id"`
 }
 
 type ProjectStage struct {
@@ -12,4 +14,5 @@ type ProjectStage struct {
 	projectId   int
 	name        string
 	description string
+	status      int
 }

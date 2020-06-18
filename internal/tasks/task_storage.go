@@ -24,4 +24,6 @@ type TaskStorage interface {
 	UpdateLastWatchedComment(userId int, taskId string, commentId int)
 	LoadComments(discussionId string) []Comment
 	CreateDiscussion(id string)
+	CreateProject(project Project) int
+	LoadProjects(oid int) []Project
 }

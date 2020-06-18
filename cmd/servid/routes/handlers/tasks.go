@@ -3,6 +3,7 @@ package handlers
 import (
 	"encoding/json"
 	"fmt"
+	"github.com/google/uuid"
 	"github.com/gorilla/mux"
 	"log"
 	"net/http"
@@ -11,6 +12,41 @@ import (
 	"tasks17-server/internal/platform"
 	"tasks17-server/internal/tasks"
 )
+
+func ProjectListHandler(ts tasks.TaskStorage) func(w http.ResponseWriter, r *http.Request) {
+	return func(w http.ResponseWriter, r *http.Request) {
+		credentials, _ := auth.FromRequest(r)
+
+		jsonResponse(ts.LoadProjects(credentials.Oid), w)
+	}
+}
+
+func AddProjectHandler(ts tasks.TaskStorage) func(w http.ResponseWriter, r *http.Request) {
+	return func(w http.ResponseWriter, r *http.Request) {
+		type createProject struct {
+			Name        string
+			Description string
+		}
+
+		var cp createProject
+		credentials, _ := auth.FromRequest(r)
+		decoder := json.NewDecoder(r.Body)
+		_ = decoder.Decode(&cp)
+
+		discussionId := uuid.New().String()
+		ts.CreateDiscussion(discussionId)
+
+		projectId := ts.CreateProject(tasks.Project{
+			OrgId:        credentials.Oid,
+			Name:         cp.Name,
+			Description:  cp.Description,
+			Status:       0,
+			DiscussionId: discussionId,
+		})
+
+		jsonResponse(map[string]int{"id": projectId}, w)
+	}
+}
 
 func AddTeamHandler(ts tasks.TaskStorage) func(w http.ResponseWriter, r *http.Request) {
 	return func(w http.ResponseWriter, r *http.Request) {

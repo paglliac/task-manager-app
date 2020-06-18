@@ -17,6 +17,46 @@ type Storage struct {
 	*sql.DB
 }
 
+func (s *Storage) LoadProjects(oid int) []tasks.Project {
+	list := make([]tasks.Project, 0)
+
+	rows, err := s.Query(`SELECT id, org_id, name, description, status, discussion_id FROM projects WHERE org_id = $1`, oid)
+
+	defer rows.Close()
+
+	if err != nil {
+		log.Panic(err)
+	}
+
+	for rows.Next() {
+		var project tasks.Project
+		err = rows.Scan(&project.Id, &project.OrgId, &project.Name, &project.Description, &project.Status, &project.DiscussionId)
+
+		if err != nil {
+			log.Println("Error while scanning entity", err)
+		} else {
+			list = append(list, project)
+		}
+	}
+
+	if err := rows.Err(); err != nil {
+		log.Panic(err)
+	}
+
+	return list
+}
+
+func (s *Storage) CreateProject(project tasks.Project) (id int) {
+	err := s.QueryRow(`INSERT into projects (org_id, name, description, status, discussion_id) values ($1, $2, $3, $4, $5) RETURNING id`, project.OrgId, project.Name, project.Description, project.Status, project.DiscussionId).Scan(&id)
+
+	if err != nil {
+		log.Printf("Error while inserting project event %v", err)
+		return 0
+	}
+
+	return id
+}
+
 func (s *Storage) CreateDiscussion(id string) {
 	_, err := s.Exec(`INSERT into discussions (id) values ($1)`, id)
 
@@ -395,6 +435,15 @@ func (s *Storage) SaveTeam(team tasks.Team) (id int, err error) {
 func (s *Storage) RemoveTeam(id int) {
 	// TODO add error processing here
 	_, err := s.Exec(`DELETE FROM teams where id = $1`, id)
+
+	if err != nil {
+		log.Println(err)
+	}
+}
+
+func (s *Storage) RemoveProject(id int) {
+	// TODO add error processing here
+	_, err := s.Exec(`DELETE FROM projects where id = $1`, id)
 
 	if err != nil {
 		log.Println(err)

@@ -1,6 +1,7 @@
 package routes
 
 import (
+	"encoding/json"
 	"fmt"
 	_ "github.com/lib/pq"
 	"io/ioutil"
@@ -250,5 +251,36 @@ func TestCompleteSubTask(t *testing.T) {
 	subTasks := s.LoadSubTasks(task.Id)
 	if subTasks[0].ClosedAt.IsZero() || subTasks[0].Status != 1 {
 		t.Error("Sub task have not been closed")
+	}
+}
+
+func TestAddProjectEndpoint(t *testing.T) {
+	pr := map[string]string{
+		"name":        "Project A",
+		"description": "Description of project A",
+	}
+	response := NewRequester(t).auth(&setup.user).post("/projects/add", pr)
+
+	projectId := int(response.getRaw("id").(float64))
+
+	if projectId == 0 {
+		t.Error("Project haven't been created")
+	}
+
+	s.RemoveTeam(projectId)
+}
+
+func TestProjectsListEndpoint(t *testing.T) {
+	response := NewRequester(t).auth(&setup.user).get("/projects")
+
+	loadedResponse, _ := ioutil.ReadAll(response.rawResponse.Body)
+	//r := string(bytes)
+	jsonResponse, _ := json.Marshal([]tasks.Project{setup.project})
+
+	a := string(loadedResponse)
+	b := string(jsonResponse)
+
+	if a != b {
+		t.Error("Project not loaded")
 	}
 }

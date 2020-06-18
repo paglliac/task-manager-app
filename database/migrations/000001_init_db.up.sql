@@ -92,5 +92,21 @@ CREATE TABLE IF NOT EXISTS sub_tasks
     UNIQUE (task_id, stage_id, rank)
 );
 
+CREATE TABLE IF NOT EXISTS projects
+(
+    id            SERIAL PRIMARY KEY,
+    org_id        INT          NOT NULL REFERENCES organisations (id) ON DELETE CASCADE,
+    name          VARCHAR(255) NOT NULL,
+    description   TEXT,
+    status        INT          NOT NULL,
+    discussion_id CHAR(36)
+);
 
-
+CREATE TABLE IF NOT EXISTS project_stages
+(
+    id          SERIAL PRIMARY KEY,
+    project_id  INT          NOT NULL REFERENCES projects (id) ON DELETE CASCADE,
+    name        VARCHAR(255) NOT NULL,
+    description TEXT,
+    status      INT          NOT NULL
+);

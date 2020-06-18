@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"context"
 	"encoding/json"
+	"github.com/google/uuid"
 	"io/ioutil"
 	"log"
 	"net/http"
@@ -21,6 +22,7 @@ type dbSetup struct {
 	teamId   int
 	teamName string
 	user     user
+	project  tasks.Project
 }
 
 type user struct {
@@ -67,6 +69,7 @@ func setUpDatabase() {
 	createOrg()
 	createTeam()
 	createTeamMember()
+	createProject()
 }
 
 func authRequest(req *http.Request, user *user) {
@@ -219,6 +222,22 @@ func createTeamMember() {
 		password: u.Password,
 		teamId:   setup.teamId,
 	}
+
+}
+
+func createProject() {
+	discussionId := uuid.New().String()
+	s.CreateDiscussion(discussionId)
+	p := tasks.Project{
+		OrgId:        setup.orgId,
+		Name:         "Project A",
+		Description:  "Project A Discussion",
+		Status:       0,
+		DiscussionId: discussionId,
+	}
+	id := s.CreateProject(p)
+	p.Id = id
+	setup.project = p
 
 }
 
