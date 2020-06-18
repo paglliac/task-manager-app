@@ -284,3 +284,18 @@ func TestProjectsListEndpoint(t *testing.T) {
 		t.Error("Project not loaded")
 	}
 }
+
+func TestProjectInfoEndpoint(t *testing.T) {
+	response := NewRequester(t).auth(&setup.user).get(fmt.Sprintf("/projects/%d", setup.project.Id))
+
+	loadedResponse, _ := ioutil.ReadAll(response.rawResponse.Body)
+	//r := string(bytes)
+	jsonResponse, _ := json.Marshal(setup.project)
+
+	a := string(loadedResponse)
+	b := string(jsonResponse)
+
+	if a != b {
+		t.Error("Project not loaded")
+	}
+}

@@ -58,6 +58,7 @@ func CreateRouter(h *platform.Hub, db *sql.DB) http.Handler {
 
 	r.HandleFunc("/projects", handlers.ProjectListHandler(&s)).Methods("GET", "OPTIONS")
 	r.HandleFunc("/projects/add", handlers.AddProjectHandler(&s)).Methods("POST", "OPTIONS")
+	r.HandleFunc("/projects/{project}", handlers.ProjectInfoHandler(&s)).Methods("GET", "OPTIONS")
 
 	r.HandleFunc("/teams", handlers.TeamListHandler(&s)).Methods("GET", "OPTIONS")
 	r.HandleFunc("/teams/add", handlers.AddTeamHandler(&s)).Methods("POST", "OPTIONS")
@@ -73,11 +74,14 @@ func CreateRouter(h *platform.Hub, db *sql.DB) http.Handler {
 	r.HandleFunc("/team/{team}/tasks/{task}/update-description", handlers.TaskUpdateDescription(&s)).Methods("POST", "OPTIONS")
 
 	r.HandleFunc("/team/{team}/tasks/{task}/comments/add", handlers.TaskCommentCreateHandler(h, &s)).Methods("POST", "OPTIONS")
-	r.HandleFunc("/team/{team}/tasks/{task}/update-last-event", handlers.TaskUpdateLastCommentHandler(&s)).Methods("POST", "OPTIONS")
 
 	r.HandleFunc("/team/{team}/stages", handlers.StagesLoadHandler(&s)).Methods("GET", "OPTIONS")
 	r.HandleFunc("/team/{team}/tasks/{task}/add-sub-task", handlers.SubTaskCreateHandler(h, &s)).Methods("POST", "OPTIONS")
 	r.HandleFunc("/team/{team}/tasks/{task}/{subTask}/close", handlers.SubTaskCloseHandler(&s)).Methods("POST", "OPTIONS")
+
+	// Discussions
+	r.HandleFunc("/discussions/{discussion}/comments/add", handlers.TaskCommentCreateHandler(h, &s)).Methods("POST", "OPTIONS")
+	r.HandleFunc("/discussions/{discussion}/update-last-comment", handlers.UpdateLastCommentHandler(&s)).Methods("POST", "OPTIONS")
 
 	// WebSocket Server
 	r.HandleFunc("/ws", func(w http.ResponseWriter, r *http.Request) {

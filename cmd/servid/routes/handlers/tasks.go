@@ -11,7 +11,23 @@ import (
 	"tasks17-server/internal/auth"
 	"tasks17-server/internal/platform"
 	"tasks17-server/internal/tasks"
+	"time"
 )
+
+func ProjectInfoHandler(ts tasks.TaskStorage) func(w http.ResponseWriter, r *http.Request) {
+	return func(w http.ResponseWriter, r *http.Request) {
+		type response struct {
+			Project  tasks.Project   `json:"project"`
+			Comments []tasks.Comment `json:"comments"`
+		}
+		var rs response
+		pid, _ := strconv.Atoi(mux.Vars(r)["project"])
+		rs.Project = ts.LoadProject(pid)
+		rs.Comments = ts.LoadComments(rs.Project.DiscussionId)
+
+		jsonResponse(rs, w)
+	}
+}
 
 func ProjectListHandler(ts tasks.TaskStorage) func(w http.ResponseWriter, r *http.Request) {
 	return func(w http.ResponseWriter, r *http.Request) {
@@ -162,7 +178,7 @@ func SubTaskCreateHandler(h *platform.Hub, ts tasks.TaskStorage) func(w http.Res
 
 func TaskCommentCreateHandler(h *platform.Hub, ts tasks.TaskStorage) func(w http.ResponseWriter, r *http.Request) {
 	return func(w http.ResponseWriter, r *http.Request) {
-		taskId := mux.Vars(r)["task"]
+		discussionId := mux.Vars(r)["discussion"]
 		credentials, _ := auth.FromRequest(r)
 		var comment tasks.Comment
 
@@ -173,9 +189,9 @@ func TaskCommentCreateHandler(h *platform.Hub, ts tasks.TaskStorage) func(w http
 			http.Error(w, "Bad body", http.StatusBadRequest)
 		}
 
-		task := ts.LoadTask(taskId)
 		comment.Author = credentials.Uid
-		comment.DiscussionId = task.DiscussionId
+		comment.DiscussionId = discussionId
+		comment.CreatedAt = time.Now()
 
 		id, err := tasks.LeaveComment(h, ts, comment)
 
@@ -184,7 +200,7 @@ func TaskCommentCreateHandler(h *platform.Hub, ts tasks.TaskStorage) func(w http
 			return
 		}
 
-		fmt.Fprintf(w, "{\"id\": \"%s\"}", id)
+		jsonResponse(map[string]int{"id": id}, w)
 	}
 }
 
@@ -220,13 +236,13 @@ func TaskLoadHandler(ts tasks.TaskStorage) func(w http.ResponseWriter, r *http.R
 	}
 }
 
-func TaskUpdateLastCommentHandler(ts tasks.TaskStorage) func(w http.ResponseWriter, r *http.Request) {
+func UpdateLastCommentHandler(ts tasks.TaskStorage) func(w http.ResponseWriter, r *http.Request) {
 	return func(w http.ResponseWriter, r *http.Request) {
 		type updateLastComment struct {
 			CommentId int `json:"comment_id"`
 		}
 
-		taskId := mux.Vars(r)["task"]
+		discussionId := mux.Vars(r)["discussionId"]
 		credentials, _ := auth.FromRequest(r)
 		var t updateLastComment
 
@@ -239,8 +255,7 @@ func TaskUpdateLastCommentHandler(ts tasks.TaskStorage) func(w http.ResponseWrit
 			return
 		}
 
-		task := ts.LoadTask(taskId)
-		ts.UpdateLastWatchedComment(credentials.Uid, task.DiscussionId, t.CommentId)
+		ts.UpdateLastWatchedComment(credentials.Uid, discussionId, t.CommentId)
 	}
 }
 

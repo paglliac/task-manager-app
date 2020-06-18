@@ -17,6 +17,20 @@ type Storage struct {
 	*sql.DB
 }
 
+func (s *Storage) LoadProject(id int) tasks.Project {
+	row := s.QueryRow("SELECT id, org_id, name, description, status, discussion_id FROM projects WHERE id = $1", id)
+
+	var p tasks.Project
+
+	err := row.Scan(&p.Id, &p.OrgId, &p.Name, &p.Description, &p.Status, &p.DiscussionId)
+
+	if err != nil {
+		log.Println("Error while scanning entity", err)
+	}
+
+	return p
+}
+
 func (s *Storage) LoadProjects(oid int) []tasks.Project {
 	list := make([]tasks.Project, 0)
 
@@ -84,7 +98,7 @@ func (s *Storage) SaveCommentEvent(comment tasks.Comment) {
 }
 
 func (s *Storage) SaveComment(comment tasks.Comment) (id int, err error) {
-	err = s.QueryRow("INSERT INTO comments (author_id, message, created_at,discussion_id) values ($1,$2,$3,$4) RETURNING id", comment.Author, comment.Message, time.Now(), comment.DiscussionId).Scan(&id)
+	err = s.QueryRow("INSERT INTO comments (author_id, message, created_at,discussion_id) values ($1,$2,$3,$4) RETURNING id", comment.Author, comment.Message, comment.CreatedAt, comment.DiscussionId).Scan(&id)
 
 	if err != nil {
 		log.Printf("Error while inserting task comment %v", err)
