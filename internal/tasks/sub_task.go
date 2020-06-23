@@ -24,9 +24,15 @@ type Stage struct {
 	Rank   int
 }
 
-type Progress struct {
+type FullProgress struct {
 	SubTasks []SubTask `json:"sub_tasks"`
 	Stages   []Stage   `json:"stages"`
+}
+
+type ShortProgress struct {
+	TaskId          int
+	totalAmount     int
+	completedAmount int
 }
 
 func AddSubTask(h *platform.Hub, ts TaskStorage, subTask SubTask) (int, error) {
@@ -45,11 +51,11 @@ func CompleteSubTask(ts TaskStorage, id int) {
 	hub.Handle(platform.WsEvent{Type: "sub_task_completed", Event: id})
 }
 
-func LoadProgress(ts TaskStorage, taskId string) Progress {
+func LoadProgress(ts TaskStorage, taskId string) FullProgress {
 	stList := ts.LoadSubTasks(taskId)
 	stageList := ts.LoadTaskStages(taskId)
 
-	return Progress{
+	return FullProgress{
 		SubTasks: stList,
 		Stages:   stageList,
 	}

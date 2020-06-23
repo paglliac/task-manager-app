@@ -399,10 +399,48 @@ func (s *Storage) LoadTasks(teamId int) []tasks.Task {
 	return taskList
 }
 
+func (s *Storage) LoadTasksByProjectStages(ids []int) []tasks.Task {
+	taskList := make([]tasks.Task, 0)
+
+	rows, err := s.Query("SELECT id, project_stage_id, team_id, title, description, status, created_at FROM tasks WHERE project_stage_id= ANY ($1::int[])", pq.Array(ids))
+	defer rows.Close()
+
+	if err != nil {
+		log.Panic(err)
+	}
+
+	for rows.Next() {
+		var task tasks.Task
+		err = rows.Scan(&task.Id, &task.ProjectStageId, &task.TeamId, &task.Title, &task.Description, &task.Status, &task.CreatedAt)
+
+		if err != nil {
+			log.Println("Error while scanning entity", err)
+		} else {
+			taskList = append(taskList, task)
+		}
+	}
+
+	if err := rows.Err(); err != nil {
+		log.Panic(err)
+	}
+
+	return taskList
+}
+
 func (s *Storage) SaveTask(task *tasks.Task) (err error) {
 	task.PreSave()
 
-	_, err = s.Exec(`INSERT into tasks (id, team_id, discussion_id, title, description, status, created_at, updated_at, author_id) values ($1, $2, $3, $4, $5, $6, $7, $8, $9)`, task.Id, task.TeamId, task.DiscussionId, task.Title, task.Description, "open", task.CreatedAt, task.UpdatedAt, task.AuthorId)
+	teamId := sql.NullInt32{
+		Int32: int32(task.TeamId),
+		Valid: task.TeamId != 0,
+	}
+
+	stageId := sql.NullInt32{
+		Int32: int32(task.ProjectStageId),
+		Valid: task.ProjectStageId != 0,
+	}
+
+	_, err = s.Exec(`INSERT into tasks (id, team_id, project_stage_id, discussion_id, title, description, status, created_at, updated_at, author_id) values ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)`, task.Id, teamId, stageId, task.DiscussionId, task.Title, task.Description, "open", task.CreatedAt, task.UpdatedAt, task.AuthorId)
 
 	if err != nil {
 		log.Printf("[SaveTask] error while saving tasks: %v", err)

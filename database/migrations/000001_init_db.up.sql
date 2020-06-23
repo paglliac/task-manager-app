@@ -4,6 +4,24 @@ CREATE TABLE IF NOT EXISTS organisations
     name varchar(255) NOT NULL
 );
 
+CREATE TABLE IF NOT EXISTS projects
+(
+    id            SERIAL PRIMARY KEY,
+    org_id        INT          NOT NULL REFERENCES organisations (id) ON DELETE CASCADE,
+    name          VARCHAR(255) NOT NULL,
+    description   TEXT,
+    status        INT          NOT NULL,
+    discussion_id CHAR(36)
+);
+
+CREATE TABLE IF NOT EXISTS project_stages
+(
+    id          SERIAL PRIMARY KEY,
+    project_id  INT          NOT NULL REFERENCES projects (id) ON DELETE CASCADE,
+    name        VARCHAR(255) NOT NULL,
+    description TEXT,
+    status      INT          NOT NULL
+);
 
 CREATE TABLE IF NOT EXISTS teams
 (
@@ -39,15 +57,16 @@ CREATE TABLE IF NOT EXISTS comments
 
 CREATE TABLE IF NOT EXISTS tasks
 (
-    id            CHAR(36) PRIMARY KEY,
-    author_id     INT          NOT NULL REFERENCES users (id),
-    team_id       INT          NOT NULL REFERENCES teams (id) ON DELETE CASCADE,
-    title         VARCHAR(70)  NOT NULL,
-    description   TEXT,
-    status        VARCHAR(255) NOT NULL,
-    discussion_id CHAR(36)     NOT NULL REFERENCES discussions (id),
-    created_at    TIMESTAMP    NOT NULL,
-    updated_at    TIMESTAMP    NOT NULL
+    id               CHAR(36) PRIMARY KEY,
+    author_id        INT          NOT NULL REFERENCES users (id),
+    team_id          INT REFERENCES teams (id) ON DELETE CASCADE,
+    project_stage_id INT REFERENCES project_stages (id) ON DELETE CASCADE,
+    title            VARCHAR(70)  NOT NULL,
+    description      TEXT,
+    status           VARCHAR(255) NOT NULL,
+    discussion_id    CHAR(36)     NOT NULL REFERENCES discussions (id),
+    created_at       TIMESTAMP    NOT NULL,
+    updated_at       TIMESTAMP    NOT NULL
 );
 
 CREATE TABLE IF NOT EXISTS tasks_events
@@ -92,21 +111,3 @@ CREATE TABLE IF NOT EXISTS sub_tasks
     UNIQUE (task_id, stage_id, rank)
 );
 
-CREATE TABLE IF NOT EXISTS projects
-(
-    id            SERIAL PRIMARY KEY,
-    org_id        INT          NOT NULL REFERENCES organisations (id) ON DELETE CASCADE,
-    name          VARCHAR(255) NOT NULL,
-    description   TEXT,
-    status        INT          NOT NULL,
-    discussion_id CHAR(36)
-);
-
-CREATE TABLE IF NOT EXISTS project_stages
-(
-    id          SERIAL PRIMARY KEY,
-    project_id  INT          NOT NULL REFERENCES projects (id) ON DELETE CASCADE,
-    name        VARCHAR(255) NOT NULL,
-    description TEXT,
-    status      INT          NOT NULL
-);

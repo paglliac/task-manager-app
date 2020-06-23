@@ -15,4 +15,5 @@ type ProjectStage struct {
 	Name        string `json:"name"`
 	Description string `json:"description"`
 	Status      int    `json:"status"`
+	Tasks       []Task `json:"tasks"`
 }

@@ -13,16 +13,20 @@ func Init(h EventHandler) {
 }
 
 type Task struct {
-	Id           string    `json:"id"`
-	TeamId       int       `json:"team_id"`
-	ProjectId    int       `json:"project_id"`
-	Title        string    `json:"title"`
-	Description  string    `json:"description"`
-	Status       string    `json:"status"`
-	DiscussionId string    `json:"discussion_id"`
-	CreatedAt    time.Time `json:"created_at"`
-	UpdatedAt    time.Time `json:"updated_at"`
-	AuthorId     int
+	Id             string    `json:"id"`
+	TeamId         int       `json:"team_id"`
+	ProjectStageId int       `json:"project_stage_id"`
+	Title          string    `json:"title"`
+	Description    string    `json:"description"`
+	Status         string    `json:"status"`
+	DiscussionId   string    `json:"discussion_id"`
+	CreatedAt      time.Time `json:"created_at"`
+	UpdatedAt      time.Time `json:"updated_at"`
+	AuthorId       int
+}
+
+type TaskProgress struct {
+	Task Task
 }
 
 func (t *Task) PreSave() {

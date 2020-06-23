@@ -2,6 +2,7 @@ package tasks
 
 type TaskStorage interface {
 	LoadTasks(teamId int) []Task
+	LoadTasksByProjectStages(ids []int) []Task
 	// TODO move teams outside task storage
 	LoadTask(id string) Task
 	SaveTask(t *Task) error
