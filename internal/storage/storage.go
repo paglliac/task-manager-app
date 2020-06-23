@@ -111,6 +111,14 @@ func (s *Storage) CreateProject(project tasks.Project) (id int) {
 	return id
 }
 
+func (s *Storage) UpdateProject(project tasks.Project) {
+	_, err := s.Exec(`UPDATE projects set name = $1, description = $2, status = $3 WHERE projects.id = $4`, project.Name, project.Description, project.Status, project.Id)
+
+	if err != nil {
+		log.Printf("Error while inserting task event %v", err)
+	}
+}
+
 func (s *Storage) CreateDiscussion(id string) {
 	_, err := s.Exec(`INSERT into discussions (id) values ($1)`, id)
 

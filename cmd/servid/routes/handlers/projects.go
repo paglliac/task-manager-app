@@ -96,6 +96,31 @@ func AddProjectHandler(ts tasks.TaskStorage) func(w http.ResponseWriter, r *http
 	}
 }
 
+func UpdateProjectHandler(ts tasks.TaskStorage) func(w http.ResponseWriter, r *http.Request) {
+	return func(w http.ResponseWriter, r *http.Request) {
+		type changeProject struct {
+			Name        string
+			Description string
+		}
+
+		pid, _ := strconv.Atoi(mux.Vars(r)["project"])
+
+		var cp changeProject
+		//creds, _ := auth.FromRequest(r)
+		decoder := json.NewDecoder(r.Body)
+		_ = decoder.Decode(&cp)
+
+		project := ts.LoadProject(pid)
+
+		project.Name = cp.Name
+		project.Description = cp.Description
+
+		ts.UpdateProject(project)
+
+		jsonResponse("ok", w)
+	}
+}
+
 func AddTaskForProjectStageHandler(ts tasks.TaskStorage) func(w http.ResponseWriter, r *http.Request) {
 	return func(w http.ResponseWriter, r *http.Request) {
 		var t tasks.Task

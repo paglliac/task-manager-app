@@ -59,6 +59,7 @@ func CreateRouter(h *platform.Hub, db *sql.DB) http.Handler {
 	r.HandleFunc("/projects", handlers.ProjectListHandler(&s)).Methods("GET", "OPTIONS")
 	r.HandleFunc("/projects/add", handlers.AddProjectHandler(&s)).Methods("POST", "OPTIONS")
 	r.HandleFunc("/project/{project}", handlers.ProjectInfoHandler(&s)).Methods("GET", "OPTIONS")
+	r.HandleFunc("/project/{project}/update", handlers.UpdateProjectHandler(&s)).Methods("POST", "OPTIONS")
 	r.HandleFunc("/project/{project}/stages/add", handlers.ProjectAddStageHandler(&s)).Methods("POST", "OPTIONS")
 	r.HandleFunc("/project/{project}/stage/{stage}/tasks/add", handlers.AddTaskForProjectStageHandler(&s)).Methods("POST", "OPTIONS")
 

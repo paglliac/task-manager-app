@@ -31,4 +31,5 @@ type TaskStorage interface {
 	LoadProject(id int) Project
 	CreateProjectStage(stage ProjectStage) int
 	LoadProjectStages(pid int) []ProjectStage
+	UpdateProject(project Project)
 }
