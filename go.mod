@@ -11,3 +11,5 @@ require github.com/google/uuid v1.1.1
 require github.com/lib/pq v1.3.0
 
 require github.com/dgrijalva/jwt-go v3.2.0+incompatible
+
+require github.com/joho/godotenv v1.3.0

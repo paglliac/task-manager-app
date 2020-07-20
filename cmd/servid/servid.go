@@ -4,7 +4,6 @@ import (
 	_ "github.com/lib/pq"
 	"log"
 	"net/http"
-	"os"
 	"tasks17-server/cmd/servid/routes"
 	"tasks17-server/internal/auth"
 	"tasks17-server/internal/platform"
@@ -15,7 +14,8 @@ import (
 func main() {
 	log.SetFlags(log.Ldate | log.Ltime | log.Llongfile)
 
-	db, err := platform.InitDb(os.Getenv("DB_HOST"))
+	config := platform.InitConfig()
+	db, err := platform.InitDb(config.DbConfig)
 	if err != nil {
 		panic(err)
 	}

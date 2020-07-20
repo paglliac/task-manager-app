@@ -6,8 +6,8 @@ import (
 	"log"
 )
 
-func InitDb(dbHost string) (*sql.DB, error) {
-	db, err := sql.Open("postgres", fmt.Sprintf("postgres://postgres:tasks17@%s/tasks17?sslmode=disable", dbHost))
+func InitDb(config DbConfig) (*sql.DB, error) {
+	db, err := sql.Open("postgres", fmt.Sprintf("postgres://%s:%s@%s/%s?sslmode=disable", config.Username, config.Password, config.Host, config.Db))
 
 	if err != nil {
 		log.Panic(err)

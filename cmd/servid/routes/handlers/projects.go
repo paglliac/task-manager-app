@@ -106,7 +106,6 @@ func UpdateProjectHandler(ts tasks.TaskStorage) func(w http.ResponseWriter, r *h
 		pid, _ := strconv.Atoi(mux.Vars(r)["project"])
 
 		var cp changeProject
-		//creds, _ := auth.FromRequest(r)
 		decoder := json.NewDecoder(r.Body)
 		_ = decoder.Decode(&cp)
 

@@ -18,3 +18,9 @@ services:
     environment:
       POSTGRES_DB: tasks17
       POSTGRES_PASSWORD: tasks17
+
+  mailhog:
+    image: mailhog/mailhog
+    ports:
+      - 1025:1025
+      - 8025:8025

@@ -27,6 +27,7 @@ type dbSetup struct {
 
 type user struct {
 	id       int
+	name     string
 	email    string
 	password string
 	teamId   int
@@ -220,6 +221,7 @@ func createTeamMember() {
 		id:       id,
 		email:    u.Email,
 		password: u.Password,
+		name:     u.Name,
 		teamId:   setup.teamId,
 	}
 

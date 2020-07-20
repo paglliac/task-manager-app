@@ -17,6 +17,20 @@ type Storage struct {
 	*sql.DB
 }
 
+func (s *Storage) LoadUser(uid int) tasks.User {
+	row := s.QueryRow("SELECT id, email, name, avatar_url FROM users WHERE id = $1", uid)
+
+	var u tasks.User
+
+	err := row.Scan(&u.Id, &u.Email, &u.Name, &u.AvatarUrl)
+
+	if err != nil {
+		log.Println("Error while scanning entity", err)
+	}
+
+	return u
+}
+
 func (s *Storage) LoadProjectStages(pid int) []tasks.ProjectStage {
 	list := make([]tasks.ProjectStage, 0)
 
@@ -410,7 +424,7 @@ func (s *Storage) LoadTasks(teamId int) []tasks.Task {
 func (s *Storage) LoadTasksByProjectStages(ids []int) []tasks.Task {
 	taskList := make([]tasks.Task, 0)
 
-	rows, err := s.Query("SELECT id, project_stage_id, team_id, title, description, status, created_at FROM tasks WHERE project_stage_id= ANY ($1::int[])", pq.Array(ids))
+	rows, err := s.Query("SELECT id, project_stage_id, title, description, status, created_at FROM tasks WHERE project_stage_id= ANY ($1::int[])", pq.Array(ids))
 	defer rows.Close()
 
 	if err != nil {
@@ -419,7 +433,7 @@ func (s *Storage) LoadTasksByProjectStages(ids []int) []tasks.Task {
 
 	for rows.Next() {
 		var task tasks.Task
-		err = rows.Scan(&task.Id, &task.ProjectStageId, &task.TeamId, &task.Title, &task.Description, &task.Status, &task.CreatedAt)
+		err = rows.Scan(&task.Id, &task.ProjectStageId, &task.Title, &task.Description, &task.Status, &task.CreatedAt)
 
 		if err != nil {
 			log.Println("Error while scanning entity", err)

@@ -56,6 +56,10 @@ func CreateRouter(h *platform.Hub, db *sql.DB) http.Handler {
 
 	r.HandleFunc("/sign-in", handlers.SignInHandler(authenticator)).Methods("POST", "OPTIONS")
 
+	// User account packcage routes
+	r.HandleFunc("/my/profile", handlers.UserProfileHandler(&s)).Methods("GET", "OPTIONS")
+
+	// Project package routes
 	r.HandleFunc("/projects", handlers.ProjectListHandler(&s)).Methods("GET", "OPTIONS")
 	r.HandleFunc("/projects/add", handlers.AddProjectHandler(&s)).Methods("POST", "OPTIONS")
 	r.HandleFunc("/project/{project}", handlers.ProjectInfoHandler(&s)).Methods("GET", "OPTIONS")

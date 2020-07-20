@@ -274,7 +274,6 @@ func TestProjectsListEndpoint(t *testing.T) {
 	response := NewRequester(t).auth(&setup.user).get("/projects")
 
 	loadedResponse, _ := ioutil.ReadAll(response.rawResponse.Body)
-	//r := string(bytes)
 	jsonResponse, _ := json.Marshal([]tasks.Project{setup.project})
 
 	a := string(loadedResponse)
@@ -289,7 +288,6 @@ func TestProjectInfoEndpoint(t *testing.T) {
 	response := NewRequester(t).auth(&setup.user).get(fmt.Sprintf("/projects/%d", setup.project.Id))
 
 	loadedResponse, _ := ioutil.ReadAll(response.rawResponse.Body)
-	//r := string(bytes)
 	jsonResponse, _ := json.Marshal(setup.project)
 
 	a := string(loadedResponse)
@@ -297,5 +295,21 @@ func TestProjectInfoEndpoint(t *testing.T) {
 
 	if a != b {
 		t.Error("Project not loaded")
+	}
+}
+
+func TestUserGetInfo(t *testing.T) {
+	response := NewRequester(t).auth(&setup.user).get("/my/profile")
+	loadedResponse, _ := ioutil.ReadAll(response.rawResponse.Body)
+	jsonResponse, _ := json.Marshal(map[string]string{
+		"name":  setup.user.name,
+		"email": setup.user.email,
+	})
+
+	a := string(loadedResponse)
+	b := string(jsonResponse)
+
+	if a != b {
+		t.Error("User info presentation is wrong")
 	}
 }
