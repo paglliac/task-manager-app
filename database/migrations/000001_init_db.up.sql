@@ -51,7 +51,7 @@ CREATE TABLE IF NOT EXISTS comments
 (
     id            SERIAL PRIMARY KEY,
     discussion_id CHAR(36)  NOT NULL REFERENCES discussions (id) ON DELETE CASCADE,
-    author_id     INT       REFERENCES users (id) ON DELETE SET NULL,
+    author_id     INT       REFERENCES users (id) ON DELETE CASCADE,
     message       TEXT      NOT NULL,
     created_at    TIMESTAMP NOT NULL
 );

@@ -1,7 +1,6 @@
 package tasks_test
 
 import (
-	"os"
 	"tasks17-server/internal/platform"
 	"tasks17-server/internal/storage"
 	"tasks17-server/internal/tasks"
@@ -57,8 +56,9 @@ type user struct {
 }
 
 func TestMain(m *testing.M) {
-	dbHost := os.Getenv("DB_HOST")
-	db, _ := platform.InitDb(dbHost)
+	config := platform.InitConfig()
+
+	db, _ := platform.InitDb(config.DbConfig)
 
 	s = storage.New(db)
 

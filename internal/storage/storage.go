@@ -36,7 +36,9 @@ func (s *Storage) LoadProjectStages(pid int) []tasks.ProjectStage {
 
 	rows, err := s.Query(`SELECT id, project_id, name, description, status FROM project_stages WHERE project_id = $1`, pid)
 
-	defer rows.Close()
+	if rows != nil {
+		defer func() { _ = rows.Close() }()
+	}
 
 	if err != nil {
 		log.Panic(err)
@@ -348,13 +350,15 @@ func (s *Storage) LoadStates(teamId int) tasks.States {
 }
 
 func (s *Storage) LoadUnreadCommentsAmount(uid int, discussionsIds []string) map[string]int {
-	rows, err := s.Query(`SELECT dwc.discussion_id, count(*)
+	rows, err := s.Query(`SELECT comments.discussion_id, count(*)
 FROM comments
-         LEFT JOIN discussion_watched_comment dwc on comments.discussion_id = dwc.discussion_id
+         LEFT JOIN (select * from discussion_watched_comment where user_id = $2) dwc
+                   on comments.discussion_id = dwc.discussion_id
 where comments.discussion_id = ANY ($1::char(36)[])
-  and dwc.user_id = $2
-  and comments.id > dwc.last_comment_id
-GROUP BY dwc.discussion_id`, pq.Array(discussionsIds), uid)
+    and (dwc.user_id = $2
+        and comments.id > dwc.last_comment_id)
+    or user_id is null
+GROUP BY comments.discussion_id`, pq.Array(discussionsIds), uid)
 	defer rows.Close()
 
 	if err != nil {

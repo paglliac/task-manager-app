@@ -6,6 +6,11 @@ Project structure follow rules from https://www.ardanlabs.com/blog/2017/02/packa
 
 version go 1.13
 
+### Install go-migrate
+ https://github.com/golang-migrate/migrate
+####Macos
+ brew install golang-migrate 
+ 
 #### Ubuntu
 https://github.com/golang/go/wiki/Ubuntu
 

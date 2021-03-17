@@ -4,6 +4,7 @@ import (
 	_ "github.com/lib/pq"
 	"tasks17-server/internal/tasks"
 	"testing"
+	"time"
 )
 
 func TestCreateTask(t *testing.T) {
@@ -64,6 +65,7 @@ func TestReadComment(t *testing.T) {
 	commentId, _ := tasks.LeaveComment(hh, &s, tasks.Comment{
 		DiscussionId: expectedTask.DiscussionId,
 		Message:      "New comment",
+		CreatedAt:    time.Now(),
 		Author:       setup.users.main().id,
 	})
 
@@ -73,7 +75,7 @@ func TestReadComment(t *testing.T) {
 		t.Errorf("Expected one unread comments, got %d", states[id].UnreadComments)
 	}
 
-	s.UpdateLastWatchedComment(setup.users.secondary().id, id, commentId)
+	s.UpdateLastWatchedComment(setup.users.secondary().id, expectedTask.DiscussionId, commentId)
 
 	states = tasks.LoadTaskStateList(&s, setup.users.secondary().id, setup.users.secondary().teamId)
 

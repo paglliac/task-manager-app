@@ -11,9 +11,9 @@ import (
 )
 
 func main() {
-	dbHost := os.Getenv("DB_HOST")
-	db, err := platform.InitDb(dbHost)
-	storage := storage.New(db)
+	config := platform.InitConfig()
+	db, err := platform.InitDb(config.DbConfig)
+	s := storage.New(db)
 
 	if err != nil {
 		panic(err)
@@ -23,12 +23,12 @@ func main() {
 	log.Println(cmd)
 
 	if cmd == "createUser" {
-		createUser(storage)
+		createUser(s)
 		return
 	}
 
 	if cmd == "setup" {
-		setup(storage)
+		setup(s)
 		return
 	}
 
@@ -43,11 +43,15 @@ func createUser(db storage.Storage) {
 	email := createUserCmd.String("email", "", "a string")
 	password := createUserCmd.String("password", "", "a string")
 
-	createUserCmd.Parse(os.Args[2:])
+	err := createUserCmd.Parse(os.Args[2:])
+	if err != nil {
+		log.Printf("[save user] parsing cmd parameters error: %v", err)
+		os.Exit(1)
+	}
 
 	var uid int
 
-	err := db.QueryRow(`INSERT into users (organisation_id, name, email, password) values ($1, $2, $3, $4) RETURNING id`, *orgId, *username, *email, *password).Scan(&uid)
+	err = db.QueryRow(`INSERT into users (organisation_id, name, email, password) values ($1, $2, $3, $4) RETURNING id`, *orgId, *username, *email, *password).Scan(&uid)
 
 	if err != nil {
 		log.Printf("[save user] error while saving: %v", err)
@@ -71,7 +75,7 @@ func setup(db storage.Storage) {
 
 	log.Printf("Organisation created successfully with id: %d", orgId)
 
-	err = db.QueryRow(`INSERT into teams (name, organisation_id) values ('Team A', $1) RETURNING id`, orgId).Scan(&teamId)
+	err = db.QueryRow(`INSERT into teams (name, organisation_id) values ('First team', $1) RETURNING id`, orgId).Scan(&teamId)
 
 	if err != nil {
 		log.Printf("[team saving] error while saving: %v", err)
